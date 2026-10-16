@@ -26,3 +26,13 @@ export async function getPrivate<T>(path: string, accessToken: string): Promise<
   if (!res.ok) throw new Error(`API ${res.status} for ${path}`);
   return (await res.json()) as T;
 }
+
+/** Like getPublic, but returns undefined instead of throwing when the API is down. */
+export async function tryGetPublic<T>(path: string): Promise<T | null | undefined> {
+  try {
+    return await getPublic<T>(path);
+  } catch (e) {
+    console.error(`[api] ${path}:`, e instanceof Error ? e.message : e);
+    return undefined;
+  }
+}

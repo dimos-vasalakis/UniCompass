@@ -2,27 +2,34 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { getPrivate } from "@/lib/api/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import type { SavedMatch } from "@/types";
 
 async function Dashboard() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const user = await getUser();
+  if (!user) redirect("/login?next=/dashboard");
 
   const {
     data: { session },
-  } = await supabase.auth.getSession();
-  const saved = session ? await getPrivate<SavedMatch[]>("/match/saved", session.access_token) : [];
+  } = await (await createClient()).auth.getSession();
+  let saved: SavedMatch[] = [];
+  let savedError = false;
+  if (session) {
+    try {
+      saved = await getPrivate<SavedMatch[]>("/match/saved", session.access_token);
+    } catch {
+      savedError = true;
+    }
+  }
 
   return (
     <>
       <h1 className="text-2xl font-semibold">Welcome, {user.email}</h1>
       <section className="mt-8">
         <h2 className="text-xl font-semibold">Your saved searches</h2>
-        {saved.length === 0 ? (
+        {savedError ? (
+          <p className="mt-2 text-muted">Couldn&apos;t load your saved searches. Please try again later.</p>
+        ) : saved.length === 0 ? (
           <p className="mt-2 text-muted">
             Nothing saved yet.{" "}
             <Link href="/match" className="font-medium text-brand hover:underline">

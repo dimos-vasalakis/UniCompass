@@ -198,6 +198,7 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
               <p className="text-sm text-muted">How do you usually travel home to your family?</p>
             </div>
             <select
+              aria-label="How you travel home"
               value={hubSlug ?? ""}
               onChange={(e) => {
                 const v = e.target.value || null;
@@ -419,9 +420,12 @@ function Results({
       lat: r.lat,
       lng: r.lng,
       kind: "area",
+      badge: String(i + 1),
     }));
-    if (campusPoint) p.push({ key: "campus", label: "🎓 Your campus", ...campusPoint, kind: "campus" });
-    if (hub) p.push({ key: "hub", label: hub.name, lat: hub.lat, lng: hub.lng, kind: "hub" });
+    if (campusPoint) {
+      p.push({ key: "campus", label: `Your campus: ${campusPoint.name}`, ...campusPoint, kind: "campus", badge: "🎓" });
+    }
+    if (hub) p.push({ key: "hub", label: hub.name, lat: hub.lat, lng: hub.lng, kind: "hub", badge: "⌂" });
     return p;
   }, [results, campusPoint, hub]);
 
@@ -469,8 +473,13 @@ function Results({
               <ResultCard key={r.slug} area={r} rank={i + 1} hub={hub} />
             ))}
           </ol>
-          <div className="h-80 lg:sticky lg:top-6 lg:h-[520px]">
-            <AreaMap points={points} />
+          <div className="lg:sticky lg:top-6">
+            <div className="h-80 lg:h-[520px]">
+              <AreaMap points={points} />
+            </div>
+            <p className="mt-2 text-xs text-muted">
+              1–3: your areas · 🎓 your campus{hub ? ` · ⌂ ${hub.name}` : ""}. Tap a pin for its name.
+            </p>
           </div>
         </div>
       )}
@@ -488,7 +497,9 @@ function ResultCard({ area, rank, hub }: { area: MatchArea; rank: number; hub: H
             {area.name} <span className="font-normal text-muted">· {area.name_el}</span>
           </h2>
         </div>
-        <div className="rounded-full bg-brand px-3 py-1 text-sm font-semibold text-white">{area.match}% match</div>
+        <div className="shrink-0 whitespace-nowrap rounded-full bg-brand px-3 py-1 text-sm font-semibold text-white">
+          {area.match}% match
+        </div>
       </div>
 
       {area.drivers.length > 0 && (

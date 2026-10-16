@@ -11,6 +11,9 @@ Frontend (run from `frontend/`):
 npm run dev      # http://localhost:3000
 npm run build
 npm run lint     # eslint
+npm run typecheck
+npm test         # vitest unit tests (src/**/*.test.ts)
+npm run test:e2e # Playwright (e2e/); starts uvicorn + next itself, needs the seeded test DB
 ```
 
 Backend (run from `backend/`, Python 3.12, venv in `backend/.venv`):
@@ -33,13 +36,17 @@ stripe listen --forward-to localhost:8000/api/v1/billing/webhook  # local Stripe
 
 Env: copy `frontend/.env.example` → `.env.local` and `backend/.env.example` → `.env`. Backend settings live in `app/core/config.py` (pydantic-settings, all default to empty strings so the app boots without secrets).
 
+## Tests & CI
+
+`.github/workflows/ci.yml`: backend (ruff, `alembic upgrade` + `alembic check` + down/up round-trip, seed, pytest on a Postgres service), frontend (lint, typecheck, vitest, build), then e2e (Playwright, desktop + phone). `backend/tests/supabase_stub.sql` stands in for Supabase (auth schema, `anon`/`authenticated` roles **with Supabase's default table grants**), so `test_rls.py` catches grants that look restrictive but aren't. Column-level `revoke` does not undo a table-level grant: restrict columns with an explicit `grant update (cols)` allow-list (see migration `0004`). DB tests use `requires_db` and the `make_user` fixture (inserts `auth.users`, the trigger creates the profile). `frontend/src/lib/factors.test.ts` parses the backend's `Factor` literal and `data/athens.json`, so renaming a factor/zone on one side fails CI. E2E fails on any unexpected browser console error (`e2e/fixtures.ts`).
+
 ## Next.js version caveat
 
 `frontend/AGENTS.md`: this is Next.js 16 with breaking changes vs. older versions — read the relevant guide in `frontend/node_modules/next/dist/docs/` before writing Next.js code and heed deprecation notices. Notably, middleware is `src/proxy.ts` exporting `proxy()` (not `middleware.ts`). `next dev` re-adds the AGENTS.md block; don't strip it from diffs.
 
 ## Architecture
 
-**Auth spans three systems.** Supabase Auth (Google/GitHub OAuth or email magic link) runs in the frontend. `src/app/(auth)/login` sends users to `/auth/callback?next=…`, which exchanges the code for a session cookie and redirects only to same-site relative paths (open-redirect guard). `src/proxy.ts` → `lib/supabase/proxy.ts` refreshes the session on every request and redirects unauthenticated users away from `PROTECTED_PREFIXES` (currently `/dashboard`) to `/login?next=…`. Three Supabase clients exist in `lib/supabase/`: `client.ts` (browser), `server.ts` (server components/route handlers), `proxy.ts` (request proxy) — use the one matching the runtime.
+**Auth spans three systems.** Supabase Auth (Google/GitHub OAuth or email magic link) runs in the frontend. `src/app/(auth)/login` sends users to `/auth/callback?next=…`, which exchanges the code for a session cookie and redirects only to same-site relative paths (open-redirect guard). `src/proxy.ts` → `lib/supabase/proxy.ts` refreshes the session on every request and redirects unauthenticated users away from `PROTECTED_PREFIXES` (currently `/dashboard`) to `/login?next=…`. Sign-up (`/signup`) and sign-in (`/login`) share `components/AuthForm.tsx`; email sign-in uses `shouldCreateUser: false` so unknown emails are pointed to sign-up, and migration `0003` copies `full_name`/`name` from auth metadata into `profiles`. `lib/supabase/config.ts` exports `supabaseConfigured`: with placeholder keys the proxy, header, `apiFetch` and auth pages skip Supabase instead of crashing (public pages keep working). Three Supabase clients exist in `lib/supabase/`: `client.ts` (browser), `server.ts` (server components/route handlers), `proxy.ts` (request proxy) — use the one matching the runtime.
 
 **Frontend → backend.** `lib/api/client.ts` `apiFetch()` prefixes `NEXT_PUBLIC_API_URL` + `/api/v1` and forwards the Supabase access token as a Bearer header. The backend's `app/core/security.py` verifies it: HS256 with `SUPABASE_JWT_SECRET` if set, otherwise JWKS from `{SUPABASE_URL}/auth/v1/.well-known/jwks.json` (ES256/RS256), audience `authenticated`. Protected endpoints take `user: CurrentUserDep`.
 
@@ -51,4 +58,4 @@ Env: copy `frontend/.env.example` → `.env.local` and `backend/.env.example` �
 
 **Neighborhood match (the core feature).** `data/athens.json` is the source of truth for areas, universities, campuses, departments and hubs; `scripts/seed.py` upserts it by slug and fills `travel_times` with distance estimates (`source='estimate'`) only where rows are missing; `scripts/compute_travel_times.py` overwrites them with Google Routes data (`source='google'`). `services/matching.py` is pure (no I/O): 1–5 scores map to 0–1, rent/commute/home are inverted min–max across the city, weighted by the 0–5 sliders, filtered by `max_rent`/`max_commute`, top 3 returned with `drivers` (largest contributions where the area scores ≥0.6) and pros/cons re-ordered by the student's priorities (`factor: "transport"` follows the commute/home weight). `services/places.py` loads data and caches it in Upstash under `places:v1:*` (6h TTL, bump the prefix if cached shapes change). `/match/save` recomputes server-side rather than trusting client results. Frontend: `/match` is a client flow (`MatchFlow.tsx`) fed by a server loader; server pages call `getPublic()` (`lib/api/server.ts`, `"use cache"`) only after `await connection()` / inside Suspense so `next build` never needs the API.
 
-**Caching.** `GET /users/me` caches the profile in Upstash under `profile:{user_id}` (5 min); any write path that changes a profile must `cache_delete` that key (`PATCH /users/me` and the Stripe webhook both do). All cache helpers no-op when Upstash isn't configured and swallow Upstash errors, so the API works without it.
+**Caching.** `GET /users/me` caches the profile in Upstash under `profile:{user_id}` (5 min); any write path that changes a profile must `cache_delete` that key (`PATCH /users/me` and the Stripe webhook both do). Unreachable/unconfigured Postgres returns 503 `Database unavailable` (handler in `main.py`, guard in `get_db`), and server pages use `tryGetPublic()` to show `ApiUnavailable` instead of erroring. All cache helpers no-op when Upstash isn't configured and swallow Upstash errors, so the API works without it.

@@ -3,13 +3,14 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ProsCons } from "@/components/ProsCons";
 import { ScoreBar } from "@/components/ScoreBar";
-import { getPublic } from "@/lib/api/server";
+import { ApiUnavailable } from "@/components/ApiUnavailable";
+import { tryGetPublic } from "@/lib/api/server";
 import { HUB_KIND_LABELS, SCORE_LABELS, ZONES } from "@/lib/factors";
 import type { NeighborhoodDetail, ScoreKey, TravelTime } from "@/types";
 
 function Minutes({ t }: { t: TravelTime }) {
   return (
-    <span className="tabular-nums">
+    <span className="shrink-0 whitespace-nowrap tabular-nums">
       {t.estimated ? "~" : ""}
       {t.minutes} min
     </span>
@@ -18,8 +19,9 @@ function Minutes({ t }: { t: TravelTime }) {
 
 async function Area({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const n = await getPublic<NeighborhoodDetail>(`/neighborhoods/${slug}`);
-  if (!n) notFound();
+  const n = await tryGetPublic<NeighborhoodDetail>(`/neighborhoods/${slug}`);
+  if (n === undefined) return <ApiUnavailable />;
+  if (n === null) notFound();
 
   const campuses = n.travel_times.filter((t) => t.destination_type === "campus");
   const hubs = n.travel_times.filter((t) => t.destination_type === "hub");

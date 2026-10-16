@@ -53,14 +53,26 @@ fastapi dev app/main.py      # http://localhost:8000/docs
 pytest
 ```
 
-### Backend tests
-Unit tests run with plain `pytest`. The API/database tests skip unless you point them at a migrated, seeded Postgres. A throwaway one in Docker:
+### Tests
+CI (`.github/workflows/ci.yml`) runs all of this on every push to `main` and every PR.
+
+**Backend:** unit tests run with plain `pytest`. DB tests (API, RLS/grants, seed, Stripe webhook) skip unless you point them at a migrated, seeded Postgres. A throwaway one in Docker:
 ```bash
+cd backend
 docker run -d --name unicompass-pg-test -e POSTGRES_PASSWORD=test -p 55432:5432 \
   -v "$PWD/tests/supabase_stub.sql:/docker-entrypoint-initdb.d/00_stub.sql:ro" postgres:16
 export DIRECT_URL=postgresql://postgres:test@localhost:55432/postgres
 alembic upgrade head && python -m scripts.seed
 TEST_DATABASE_URL=$DIRECT_URL pytest
+```
+`tests/supabase_stub.sql` mimics Supabase's `auth` schema and its default grants to `anon`/`authenticated`, so `tests/test_rls.py` proves the policies actually restrict access.
+
+**Frontend:**
+```bash
+cd frontend
+npm test            # unit tests (vitest)
+npm run typecheck
+npm run test:e2e    # Playwright: starts the API + Next.js itself; needs the test DB above
 ```
 
 ### Athens data (neighborhood match)

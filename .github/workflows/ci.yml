@@ -1,0 +1,149 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "24"
+
+jobs:
+  backend:
+    name: Backend (lint, migrations, tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      # Throwaway Postgres from the service container above.
+      DIRECT_URL: postgresql://postgres:test@localhost:5432/postgres
+      TEST_DATABASE_URL: postgresql://postgres:test@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r requirements.txt
+
+      - name: Lint
+        run: ruff check .
+      - name: Format
+        run: ruff format --check .
+
+      - name: Add Supabase stand-ins (auth schema, API roles, default grants)
+        run: psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/supabase_stub.sql
+      - name: Migrate
+        run: alembic upgrade head
+      - name: Models match migrations
+        run: alembic check
+      - name: Migrations round-trip (down to base and back up)
+        run: alembic downgrade base && alembic upgrade head
+      - name: Seed
+        run: python -m scripts.seed
+
+      - name: Tests
+        run: pytest -q
+
+  frontend:
+    name: Frontend (lint, types, unit tests, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+
+  e2e:
+    name: End-to-end (Playwright)
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      # Throwaway Postgres from the service container above.
+      DIRECT_URL: postgresql://postgres:test@localhost:5432/postgres
+      E2E_DATABASE_URL: postgresql://postgres:test@localhost:5432/postgres
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Backend deps, migrate, seed
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          psql "$DIRECT_URL" -v ON_ERROR_STOP=1 -f tests/supabase_stub.sql
+          alembic upgrade head
+          python -m scripts.seed
+
+      - name: Frontend deps and build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.ts starts uvicorn and `next start` itself.
+      - name: Playwright
+        working-directory: frontend
+        run: npx playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          retention-days: 7

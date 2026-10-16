@@ -1,14 +1,32 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { SUPABASE_ANON_KEY, SUPABASE_URL, supabaseConfigured } from "./config";
 
 const PROTECTED_PREFIXES = ["/dashboard"];
 
+function isProtected(request: NextRequest) {
+  return PROTECTED_PREFIXES.some((p) => request.nextUrl.pathname.startsWith(p));
+}
+
+function redirectToLogin(request: NextRequest) {
+  const url = request.nextUrl.clone();
+  url.pathname = "/login";
+  url.searchParams.set("next", request.nextUrl.pathname);
+  return NextResponse.redirect(url);
+}
+
 export async function updateSession(request: NextRequest) {
+  if (!supabaseConfigured) {
+    // No auth backend yet: public pages work, account pages go to /login,
+    // which explains that sign-in isn't set up.
+    return isProtected(request) ? redirectToLogin(request) : NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
@@ -31,15 +49,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isProtected = PROTECTED_PREFIXES.some((p) =>
-    request.nextUrl.pathname.startsWith(p),
-  );
-  if (!user && isProtected) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", request.nextUrl.pathname);
-    return NextResponse.redirect(url);
-  }
+  if (!user && isProtected(request)) return redirectToLogin(request);
 
   return response;
 }

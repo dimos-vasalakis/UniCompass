@@ -1,17 +1,14 @@
 import { NextResponse } from "next/server";
+import { safeNext } from "@/lib/redirect";
+import { supabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const nextParam = searchParams.get("next");
-  // Only allow same-site relative paths to avoid open redirects.
-  const next =
-    nextParam?.startsWith("/") && !nextParam.startsWith("//")
-      ? nextParam
-      : "/dashboard";
+  const next = safeNext(searchParams.get("next")) ?? "/dashboard";
 
-  if (code) {
+  if (code && supabaseConfigured) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(`${origin}${next}`);

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { supabaseConfigured } from "@/lib/supabase/config";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -19,10 +20,9 @@ export async function apiFetch<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const session = supabaseConfigured
+    ? (await createClient().auth.getSession()).data.session
+    : null;
 
   const headers = new Headers(init.headers);
   headers.set("Content-Type", "application/json");

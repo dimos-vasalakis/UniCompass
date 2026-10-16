@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { getPublic } from "@/lib/api/server";
+import { ApiUnavailable, NoAreaData } from "@/components/ApiUnavailable";
+import { tryGetPublic } from "@/lib/api/server";
 import { SCORE_LABELS, ZONES } from "@/lib/factors";
 import type { NeighborhoodSummary, ScoreKey } from "@/types";
 
@@ -21,7 +22,9 @@ function bestAt(n: NeighborhoodSummary): string[] {
 
 async function AreaList() {
   await connection();
-  const hoods = (await getPublic<NeighborhoodSummary[]>("/neighborhoods")) ?? [];
+  const hoods = await tryGetPublic<NeighborhoodSummary[]>("/neighborhoods");
+  if (!hoods) return <ApiUnavailable />;
+  if (!hoods.length) return <NoAreaData />;
   const byZone = Object.keys(ZONES).map((zone) => ({
     zone,
     areas: hoods.filter((h) => h.zone === zone),

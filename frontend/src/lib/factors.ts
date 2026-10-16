@@ -1,7 +1,7 @@
 import type { Factor, ScoreKey } from "@/types";
 
 export const FACTORS: { key: Factor; label: string; hint: string; driver: string }[] = [
-  { key: "commute", label: "Quick trip to campus", hint: "Public transport time to your department", driver: "Short commute" },
+  { key: "commute", label: "Quick trip to campus", hint: "Public transport time to your department", driver: "Shorter commute" },
   { key: "rent", label: "Low rent", hint: "Typical rent for a studio", driver: "Low rent" },
   { key: "safety", label: "Safety", hint: "How safe the area feels, day and night", driver: "Safe" },
   { key: "quiet", label: "Quiet", hint: "Calm streets, less traffic and noise", driver: "Quiet" },
@@ -9,7 +9,7 @@ export const FACTORS: { key: Factor; label: string; hint: string; driver: string
   { key: "student_life", label: "Student life", hint: "Other students around you", driver: "Lots of students" },
   { key: "green", label: "Green space", hint: "Parks, hills or the sea nearby", driver: "Green" },
   { key: "amenities", label: "Everyday essentials", hint: "Supermarkets, pharmacies, shops", driver: "Everything nearby" },
-  { key: "home", label: "Getting home", hint: "Trip to the bus, train, port or airport you use to go home", driver: "Easy trip home" },
+  { key: "home", label: "Getting home", hint: "Trip to the bus, train, port or airport you use to go home", driver: "Quicker trip home" },
 ];
 
 export const FACTOR_BY_KEY = Object.fromEntries(FACTORS.map((f) => [f.key, f])) as Record<

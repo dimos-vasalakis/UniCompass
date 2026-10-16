@@ -1,12 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
+import { SUPABASE_ANON_KEY, SUPABASE_URL, supabaseConfigured } from "./config";
 
 export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
@@ -25,3 +27,17 @@ export async function createClient() {
     },
   );
 }
+
+/**
+ * The logged-in user, or null (also null when Supabase isn't configured).
+ * Wrapped in React `cache()` so the header and the page share one Supabase
+ * Auth round trip per request instead of each making their own.
+ */
+export const getUser = cache(async () => {
+  if (!supabaseConfigured) return null;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+});

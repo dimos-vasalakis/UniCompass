@@ -1,0 +1,63 @@
+import { expect, test } from "./fixtures";
+
+test("home page links to the match flow", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Athens");
+  await page.getByRole("main").getByRole("link", { name: "Find my area" }).click();
+  await expect(page).toHaveURL(/\/match$/);
+  await expect(page.getByRole("heading", { name: "Where will you study?" })).toBeVisible();
+});
+
+test("area index lists every area, grouped by zone", async ({ page }) => {
+  await page.goto("/neighborhoods");
+  await expect(page.getByRole("heading", { name: "Central Athens" })).toBeVisible();
+  await expect(page.locator('main a[href^="/neighborhoods/"]')).toHaveCount(49);
+});
+
+test("area page shows pros/cons, scores and travel times", async ({ page }) => {
+  await page.goto("/neighborhoods/zografou");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Zografou");
+  await expect(page.getByRole("heading", { name: "Advantages and disadvantages" })).toBeVisible();
+  await expect(page.getByText("NTUA (ΕΜΠ)").first()).toBeVisible();
+  await expect(page.getByText(/KTEL Kifisou/)).toBeVisible();
+});
+
+test("unknown area shows not found", async ({ page }) => {
+  await page.goto("/neighborhoods/atlantis");
+  await expect(page.getByText(/could not be found/i)).toBeVisible();
+});
+
+test("dashboard sends logged-out users to login", async ({ page }) => {
+  await page.goto("/dashboard");
+  await expect(page).toHaveURL(/\/login\?next=%2Fdashboard/);
+});
+
+test("sign in and sign up link to each other", async ({ page }) => {
+  await page.goto("/login");
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Continue with Google/ })).toBeVisible();
+  await page.getByRole("link", { name: "Create an account" }).click();
+  await expect(page.getByRole("heading", { name: "Create your free account" })).toBeVisible();
+  await expect(page.getByPlaceholder("Your name")).toBeVisible();
+  await page.getByRole("main").getByRole("link", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+});
+
+test("header fits on one line", async ({ page }) => {
+  await page.goto("/");
+  const nav = page.getByRole("navigation");
+  const box = await nav.boundingBox();
+  expect(box!.height).toBeLessThan(70);
+});
+
+test("switching to sign up keeps the email you typed", async ({ page }) => {
+  // Next 16 keeps the previous page mounted (hidden) for back navigation, so
+  // only look at the visible email field.
+  const email = page.locator('input[type="email"]:visible');
+  await page.goto("/login?email=maria%40example.gr&next=%2Fmatch");
+  await expect(email).toHaveValue("maria@example.gr");
+  await page.getByRole("link", { name: "Create an account" }).click();
+  await expect(page.getByRole("heading", { name: "Create your free account" })).toBeVisible();
+  await expect(page).toHaveURL(/next=%2Fmatch/);
+  await expect(email).toHaveValue("maria@example.gr");
+});
