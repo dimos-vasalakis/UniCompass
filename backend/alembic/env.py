@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from sqlalchemy import create_engine, pool
 
 from alembic import context
-from app.core.config import get_settings, sqlalchemy_url
+from app.core.config import get_settings, is_unset, sqlalchemy_url
 from app.models import Base
 
 config = context.config
@@ -13,6 +13,11 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 # Migrations use the direct connection, never the transaction pooler.
+if is_unset(get_settings().direct_url):
+    raise SystemExit(
+        "DIRECT_URL in backend/.env is not set (still the <placeholder> from "
+        ".env.example). Copy it from Supabase → Connect. See README → Database."
+    )
 url = sqlalchemy_url(get_settings().direct_url)
 
 

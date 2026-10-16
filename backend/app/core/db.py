@@ -2,7 +2,7 @@ from collections.abc import AsyncIterator
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from app.core.config import get_settings, sqlalchemy_url
+from app.core.config import get_settings, is_unset, sqlalchemy_url
 
 
 @lru_cache
@@ -29,6 +29,8 @@ def get_sessionmaker() -> async_sessionmaker[AsyncSession]:
 
 
 async def get_db() -> AsyncIterator[AsyncSession]:
+    if is_unset(get_settings().database_url):
+        raise HTTPException(503, "Database unavailable: DATABASE_URL is not configured")
     async with get_sessionmaker()() as session:
         yield session
 

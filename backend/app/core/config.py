@@ -32,6 +32,11 @@ class Settings(BaseSettings):
     google_maps_api_key: str = ""
 
 
+def is_unset(url: str) -> bool:
+    """Empty, or still the <placeholder> value from .env.example."""
+    return not url or "<" in url
+
+
 def sqlalchemy_url(url: str) -> str:
     """Use the psycopg 3 driver for plain postgres:// URIs copied from Supabase."""
     for prefix in ("postgresql://", "postgres://"):

@@ -1,20 +1,29 @@
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import DBAPIError, InterfaceError, OperationalError
 
 from app.api.v1.router import api_router
-from app.core.config import get_settings
+from app.core.config import get_settings, is_unset
 from app.core.db import get_engine
 
 settings = get_settings()
+logger = logging.getLogger("uvicorn.error")
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    if is_unset(settings.database_url):
+        logger.warning(
+            "DATABASE_URL is not set (still the .env.example placeholder). "
+            "Endpoints that need the database will return 503."
+        )
     yield
-    if settings.database_url:
+    if not is_unset(settings.database_url):
         await get_engine().dispose()
 
 
@@ -34,3 +43,12 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix="/api/v1")
+
+
+@app.exception_handler(OperationalError)
+@app.exception_handler(InterfaceError)
+async def database_unavailable(_: Request, exc: DBAPIError) -> JSONResponse:
+    # Can't reach Postgres (bad DATABASE_URL, Supabase paused, network). Return a
+    # clear 503 instead of a bare 500; handled here so CORS headers are kept.
+    logger.error("Database unavailable: %s", exc.orig)
+    return JSONResponse(status_code=503, content={"detail": "Database unavailable"})
