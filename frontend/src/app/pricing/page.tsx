@@ -15,7 +15,7 @@ export default function PricingPage() {
       <h1 className="text-2xl font-semibold">UniCompass Premium</h1>
       <button
         onClick={upgrade}
-        className="mt-4 rounded bg-black px-4 py-2 text-white"
+        className="mt-4 rounded bg-accent px-4 py-2 font-semibold text-foreground hover:bg-accent-dark"
       >
         Upgrade
       </button>
