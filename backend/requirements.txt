@@ -1,0 +1,7 @@
+fastapi[standard]>=0.115
+pydantic-settings>=2.6
+pyjwt[crypto]>=2.10
+supabase>=2.10
+stripe>=11.0
+resend>=2.5
+upstash-redis>=1.2
