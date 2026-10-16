@@ -1,3 +1,5 @@
+import asyncio
+import uuid
 from functools import lru_cache
 from typing import Annotated
 
@@ -12,7 +14,7 @@ bearer = HTTPBearer(auto_error=False)
 
 
 class CurrentUser(BaseModel):
-    id: str
+    id: uuid.UUID
     email: str | None = None
 
 
@@ -40,13 +42,14 @@ def _decode(token: str) -> dict:
     )
 
 
-def get_current_user(
+async def get_current_user(
     creds: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)],
 ) -> CurrentUser:
     if creds is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Missing bearer token")
     try:
-        claims = _decode(creds.credentials)
+        # PyJWKClient fetches the JWKS over blocking HTTP (then caches it).
+        claims = await asyncio.to_thread(_decode, creds.credentials)
     except jwt.PyJWTError as exc:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token") from exc
     return CurrentUser(id=claims["sub"], email=claims.get("email"))

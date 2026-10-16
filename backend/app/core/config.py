@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     supabase_service_role_key: str = ""
     supabase_jwt_secret: str = ""
 
+    database_url: str = ""  # transaction pooler, used by the app
+    direct_url: str = ""  # direct connection, used by Alembic
+
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""
     stripe_premium_price_id: str = ""
@@ -24,6 +27,14 @@ class Settings(BaseSettings):
 
     upstash_redis_rest_url: str = ""
     upstash_redis_rest_token: str = ""
+
+
+def sqlalchemy_url(url: str) -> str:
+    """Use the psycopg 3 driver for plain postgres:// URIs copied from Supabase."""
+    for prefix in ("postgresql://", "postgres://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix) :]
+    return url
 
 
 @lru_cache

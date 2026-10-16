@@ -1,21 +1,30 @@
+import uuid
+from functools import lru_cache
+
 import stripe
+from sqlalchemy import update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.services.supabase import get_supabase_admin
+from app.models import Profile
+from app.services.cache import cache_delete
 
 
+@lru_cache
 def _client() -> stripe.StripeClient:
-    return stripe.StripeClient(get_settings().stripe_secret_key)
+    return stripe.StripeClient(
+        get_settings().stripe_secret_key, http_client=stripe.HTTPXClient()
+    )
 
 
-def create_checkout_session(user_id: str, email: str | None) -> str:
+async def create_checkout_session(user_id: uuid.UUID, email: str | None) -> str:
     settings = get_settings()
-    session = _client().checkout.sessions.create(
+    session = await _client().checkout.sessions.create_async(
         params={
             "mode": "payment",
             "line_items": [{"price": settings.stripe_premium_price_id, "quantity": 1}],
             "customer_email": email,
-            "client_reference_id": user_id,
+            "client_reference_id": str(user_id),
             "success_url": f"{settings.frontend_url}/dashboard?checkout=success",
             "cancel_url": f"{settings.frontend_url}/pricing?checkout=cancelled",
         }
@@ -24,16 +33,21 @@ def create_checkout_session(user_id: str, email: str | None) -> str:
 
 
 def construct_event(payload: bytes, signature: str) -> stripe.Event:
+    # Pure signature check, no I/O — fine to call from async code.
     return stripe.Webhook.construct_event(
         payload, signature, get_settings().stripe_webhook_secret
     )
 
 
-def handle_event(event: stripe.Event) -> None:
+async def handle_event(event: stripe.Event, db: AsyncSession) -> None:
     if event.type == "checkout.session.completed":
         session = event.data.object
         user_id = session.get("client_reference_id")
         if user_id:
-            get_supabase_admin().table("profiles").update(
-                {"is_premium": True, "stripe_customer_id": session.get("customer")}
-            ).eq("id", user_id).execute()
+            await db.execute(
+                update(Profile)
+                .where(Profile.id == uuid.UUID(user_id))
+                .values(is_premium=True, stripe_customer_id=session.get("customer"))
+            )
+            await db.commit()
+            await cache_delete(f"profile:{user_id}")

@@ -1,18 +1,28 @@
-import resend
+import httpx
 
 from app.core.config import get_settings
 
+RESEND_API_URL = "https://api.resend.com/emails"
 
-def send_email(to: str, subject: str, html: str) -> None:
+
+async def send_email(to: str, subject: str, html: str) -> None:
     settings = get_settings()
-    resend.api_key = settings.resend_api_key
-    resend.Emails.send(
-        {"from": settings.email_from, "to": [to], "subject": subject, "html": html}
-    )
+    async with httpx.AsyncClient(timeout=10) as client:
+        res = await client.post(
+            RESEND_API_URL,
+            headers={"Authorization": f"Bearer {settings.resend_api_key}"},
+            json={
+                "from": settings.email_from,
+                "to": [to],
+                "subject": subject,
+                "html": html,
+            },
+        )
+        res.raise_for_status()
 
 
-def send_welcome_email(to: str) -> None:
-    send_email(
+async def send_welcome_email(to: str) -> None:
+    await send_email(
         to,
         "Καλώς ήρθες στο UniCompass!",
         "<p>Congrats on passing the Panhellenic exams! "
