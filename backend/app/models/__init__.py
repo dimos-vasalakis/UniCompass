@@ -1,5 +1,25 @@
 from app.models.base import Base
-from app.models.location import City, University
+from app.models.location import (
+    Campus,
+    City,
+    Department,
+    Neighborhood,
+    TransitHub,
+    TravelTime,
+    University,
+)
+from app.models.match import SavedMatch
 from app.models.profile import Profile
 
-__all__ = ["Base", "City", "Profile", "University"]
+__all__ = [
+    "Base",
+    "Campus",
+    "City",
+    "Department",
+    "Neighborhood",
+    "Profile",
+    "SavedMatch",
+    "TransitHub",
+    "TravelTime",
+    "University",
+]

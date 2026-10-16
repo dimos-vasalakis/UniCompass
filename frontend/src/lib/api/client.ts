@@ -2,6 +2,15 @@ import { createClient } from "@/lib/supabase/client";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
 /**
  * Calls the FastAPI backend, forwarding the Supabase access token
  * so the backend can verify the user.
@@ -21,7 +30,7 @@ export async function apiFetch<T>(
 
   const res = await fetch(`${API_URL}/api/v1${path}`, { ...init, headers });
   if (!res.ok) {
-    throw new Error(`API ${res.status}: ${await res.text()}`);
+    throw new ApiError(res.status, `API ${res.status}: ${await res.text()}`);
   }
   return res.json() as Promise<T>;
 }

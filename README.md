@@ -17,17 +17,19 @@ Helping students who passed the Panhellenic exams move to their new university c
 
 ```
 frontend/              Next.js app (deploy on Vercel, root dir = frontend)
-  src/app/             routes: /, /login, /auth/callback, /dashboard, /pricing
+  src/app/             routes: /, /match, /neighborhoods(/[slug]), /login, /auth/callback, /dashboard
   src/lib/supabase/    browser, server and proxy Supabase clients
   src/lib/api/         typed fetch wrapper for the FastAPI backend
   src/proxy.ts         session refresh + protected-route redirects
 backend/               FastAPI app (deploy on Render via render.yaml)
   app/core/            settings, Supabase JWT verification
-  app/api/v1/          routers: health, users, billing (+ Stripe webhook)
+  app/api/v1/          routers: health, users, billing (+ Stripe webhook), places, match
   app/services/        supabase, stripe, resend, upstash clients
   app/schemas/         pydantic models (API)
   app/models/          SQLAlchemy models (DB)
   alembic/             migrations (run against DIRECT_URL)
+  data/athens.json     neighborhood/university/hub data (source of truth for seeding)
+  scripts/             seed.py, compute_travel_times.py
 render.yaml            Render blueprint for the API
 ```
 
@@ -50,6 +52,24 @@ cp .env.example .env         # fill in values
 fastapi dev app/main.py      # http://localhost:8000/docs
 pytest
 ```
+
+### Backend tests
+Unit tests run with plain `pytest`. The API/database tests skip unless you point them at a migrated, seeded Postgres. A throwaway one in Docker:
+```bash
+docker run -d --name unicompass-pg-test -e POSTGRES_PASSWORD=test -p 55432:5432 \
+  -v "$PWD/tests/supabase_stub.sql:/docker-entrypoint-initdb.d/00_stub.sql:ro" postgres:16
+export DIRECT_URL=postgresql://postgres:test@localhost:55432/postgres
+alembic upgrade head && python -m scripts.seed
+TEST_DATABASE_URL=$DIRECT_URL pytest
+```
+
+### Athens data (neighborhood match)
+All areas, universities, campuses, departments and transit hubs live in `backend/data/athens.json`. Edit that file, then:
+```bash
+python -m scripts.seed                   # upsert into the DB (safe to re-run)
+python -m scripts.compute_travel_times   # real transit times via Google (needs GOOGLE_MAPS_API_KEY)
+```
+Until the Google script runs, travel times are distance-based estimates and the UI shows them with a `~`.
 
 ### Google / GitHub sign-in
 1. Google Cloud Console → APIs & Services → Credentials → create an OAuth client ID (Web application).

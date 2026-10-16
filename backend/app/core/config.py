@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     upstash_redis_rest_url: str = ""
     upstash_redis_rest_token: str = ""
 
+    # Only used by scripts/compute_travel_times.py, never at request time.
+    google_maps_api_key: str = ""
+
 
 def sqlalchemy_url(url: str) -> str:
     """Use the psycopg 3 driver for plain postgres:// URIs copied from Supabase."""

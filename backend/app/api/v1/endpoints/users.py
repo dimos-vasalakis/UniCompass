@@ -25,7 +25,9 @@ async def read_me(user: CurrentUserDep, db: DbSession) -> Profile:
 
 
 @router.patch("/me", response_model=Profile)
-async def update_me(body: ProfileUpdate, user: CurrentUserDep, db: DbSession) -> Profile:
+async def update_me(
+    body: ProfileUpdate, user: CurrentUserDep, db: DbSession
+) -> Profile:
     row = await db.get(ProfileModel, user.id)
     if row is None:
         raise HTTPException(404, "Profile not found")

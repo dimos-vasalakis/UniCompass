@@ -1,0 +1,2407 @@
+{
+  "city": {
+    "slug": "athens",
+    "name": "Athens",
+    "region": "Attica"
+  },
+  "universities": [
+    {
+      "slug": "nkua",
+      "name": "National and Kapodistrian University of Athens",
+      "short_name": "NKUA (ΕΚΠΑ)"
+    },
+    {
+      "slug": "ntua",
+      "name": "National Technical University of Athens",
+      "short_name": "NTUA (ΕΜΠ)"
+    },
+    {
+      "slug": "aueb",
+      "name": "Athens University of Economics and Business",
+      "short_name": "AUEB (ΟΠΑ)"
+    },
+    {
+      "slug": "panteion",
+      "name": "Panteion University",
+      "short_name": "Panteion (Πάντειο)"
+    },
+    {
+      "slug": "unipi",
+      "name": "University of Piraeus",
+      "short_name": "UniPi (ΠαΠει)"
+    },
+    {
+      "slug": "uniwa",
+      "name": "University of West Attica",
+      "short_name": "UniWA (ΠΑΔΑ)"
+    },
+    {
+      "slug": "hua",
+      "name": "Harokopio University",
+      "short_name": "HUA (Χαροκόπειο)"
+    },
+    {
+      "slug": "aua",
+      "name": "Agricultural University of Athens",
+      "short_name": "AUA (ΓΠΑ)"
+    },
+    {
+      "slug": "asfa",
+      "name": "Athens School of Fine Arts",
+      "short_name": "ASFA (ΑΣΚΤ)"
+    }
+  ],
+  "campuses": [
+    {
+      "slug": "nkua-zografou",
+      "university": "nkua",
+      "name": "Zografou campus (Panepistimioupoli)",
+      "lat": 37.9685,
+      "lng": 23.783,
+      "departments": [
+        "Physics",
+        "Mathematics",
+        "Informatics and Telecommunications",
+        "Chemistry",
+        "Biology",
+        "Geology and Geoenvironment",
+        "Pharmacy",
+        "Philology",
+        "History and Archaeology",
+        "Philosophy",
+        "Psychology",
+        "English Language and Literature",
+        "French Language and Literature",
+        "German Language and Literature",
+        "Primary Education",
+        "Early Childhood Education",
+        "History and Philosophy of Science"
+      ]
+    },
+    {
+      "slug": "nkua-goudi",
+      "university": "nkua",
+      "name": "Goudi (Health Sciences)",
+      "lat": 37.984,
+      "lng": 23.768,
+      "departments": [
+        "Medicine",
+        "Dentistry",
+        "Nursing"
+      ]
+    },
+    {
+      "slug": "nkua-center",
+      "university": "nkua",
+      "name": "City center (Law, Economics, Political Science)",
+      "lat": 37.98,
+      "lng": 23.733,
+      "departments": [
+        "Law",
+        "Economics",
+        "Political Science and Public Administration",
+        "Communication and Media Studies"
+      ]
+    },
+    {
+      "slug": "nkua-dafni",
+      "university": "nkua",
+      "name": "Dafni (Physical Education)",
+      "lat": 37.945,
+      "lng": 23.74,
+      "departments": [
+        "Physical Education and Sport Science"
+      ]
+    },
+    {
+      "slug": "ntua-zografou",
+      "university": "ntua",
+      "name": "Zografou campus",
+      "lat": 37.978,
+      "lng": 23.783,
+      "departments": [
+        "Civil Engineering",
+        "Mechanical Engineering",
+        "Electrical and Computer Engineering",
+        "Chemical Engineering",
+        "Rural, Surveying and Geoinformatics Engineering",
+        "Mining and Metallurgical Engineering",
+        "Naval Architecture and Marine Engineering",
+        "Applied Mathematical and Physical Sciences"
+      ]
+    },
+    {
+      "slug": "ntua-patision",
+      "university": "ntua",
+      "name": "Patision complex",
+      "lat": 37.989,
+      "lng": 23.732,
+      "departments": [
+        "Architecture"
+      ]
+    },
+    {
+      "slug": "aueb-patision",
+      "university": "aueb",
+      "name": "Patision 76",
+      "lat": 37.994,
+      "lng": 23.732,
+      "departments": [
+        "Economics",
+        "Informatics",
+        "Management Science and Technology",
+        "Accounting and Finance",
+        "Business Administration",
+        "Marketing and Communication",
+        "International and European Economic Studies",
+        "Statistics"
+      ]
+    },
+    {
+      "slug": "panteion-syngrou",
+      "university": "panteion",
+      "name": "Syngrou Avenue",
+      "lat": 37.959,
+      "lng": 23.719,
+      "departments": [
+        "Psychology",
+        "Political Science and History",
+        "Sociology",
+        "Communication, Media and Culture",
+        "Public Administration",
+        "Social Anthropology",
+        "International, European and Area Studies",
+        "Economic and Regional Development",
+        "Social Policy"
+      ]
+    },
+    {
+      "slug": "unipi-main",
+      "university": "unipi",
+      "name": "Main campus (Karaoli & Dimitriou)",
+      "lat": 37.9415,
+      "lng": 23.653,
+      "departments": [
+        "Informatics",
+        "Economics",
+        "Business Administration",
+        "Banking and Financial Management",
+        "Statistics and Insurance Science",
+        "Maritime Studies",
+        "Digital Systems",
+        "Industrial Management and Technology",
+        "International and European Studies",
+        "Tourism Studies"
+      ]
+    },
+    {
+      "slug": "uniwa-egaleo",
+      "university": "uniwa",
+      "name": "Egaleo Park campus",
+      "lat": 37.996,
+      "lng": 23.676,
+      "departments": [
+        "Informatics and Computer Engineering",
+        "Electrical and Electronics Engineering",
+        "Mechanical Engineering",
+        "Civil Engineering",
+        "Surveying and Geoinformatics Engineering",
+        "Industrial Design and Production Engineering",
+        "Business Administration",
+        "Accounting and Finance",
+        "Tourism Management",
+        "Archival, Library and Information Studies",
+        "Interior Architecture",
+        "Graphic Design and Visual Communication"
+      ]
+    },
+    {
+      "slug": "uniwa-olive-grove",
+      "university": "uniwa",
+      "name": "Ancient Olive Grove campus",
+      "lat": 37.999,
+      "lng": 23.697,
+      "departments": [
+        "Nursing",
+        "Midwifery",
+        "Physiotherapy",
+        "Occupational Therapy",
+        "Biomedical Sciences",
+        "Public and Community Health",
+        "Social Work",
+        "Early Childhood Education and Care",
+        "Food Science and Technology"
+      ]
+    },
+    {
+      "slug": "hua-kallithea",
+      "university": "hua",
+      "name": "Kallithea campus",
+      "lat": 37.961,
+      "lng": 23.708,
+      "departments": [
+        "Informatics and Telematics",
+        "Nutrition and Dietetics",
+        "Geography",
+        "Economics and Sustainable Development"
+      ]
+    },
+    {
+      "slug": "aua-votanikos",
+      "university": "aua",
+      "name": "Votanikos (Iera Odos)",
+      "lat": 37.984,
+      "lng": 23.705,
+      "departments": [
+        "Crop Science",
+        "Animal Science",
+        "Food Science and Human Nutrition",
+        "Biotechnology",
+        "Agricultural Economics and Rural Development",
+        "Natural Resources Management and Agricultural Engineering"
+      ]
+    },
+    {
+      "slug": "asfa-pireos",
+      "university": "asfa",
+      "name": "Pireos 256",
+      "lat": 37.965,
+      "lng": 23.698,
+      "departments": [
+        "Fine Arts",
+        "Theory and History of Art"
+      ]
+    }
+  ],
+  "transit_hubs": [
+    {
+      "slug": "ktel-kifisou",
+      "name": "KTEL Kifisou",
+      "kind": "ktel",
+      "serves": "Buses to Peloponnese, Western Greece, Epirus, Macedonia and Thessaloniki",
+      "lat": 37.993,
+      "lng": 23.701
+    },
+    {
+      "slug": "ktel-liosion",
+      "name": "KTEL Liosion",
+      "kind": "ktel",
+      "serves": "Buses to Central Greece, Thessaly and Evia",
+      "lat": 38.011,
+      "lng": 23.721
+    },
+    {
+      "slug": "larissis-station",
+      "name": "Athens Central Station (Larissis)",
+      "kind": "rail",
+      "serves": "Trains to Thessaloniki, Larissa, Volos and Northern Greece",
+      "lat": 37.992,
+      "lng": 23.721
+    },
+    {
+      "slug": "airport",
+      "name": "Athens Airport (Eleftherios Venizelos)",
+      "kind": "airport",
+      "serves": "Flights to Crete, the islands and abroad",
+      "lat": 37.9364,
+      "lng": 23.9445
+    },
+    {
+      "slug": "piraeus-port",
+      "name": "Port of Piraeus",
+      "kind": "port",
+      "serves": "Ferries to Crete, the Cyclades, Dodecanese, North Aegean and Saronic islands",
+      "lat": 37.942,
+      "lng": 23.646
+    },
+    {
+      "slug": "rafina-port",
+      "name": "Port of Rafina",
+      "kind": "port",
+      "serves": "Ferries to the Cyclades and Evia",
+      "lat": 38.022,
+      "lng": 24.009
+    }
+  ],
+  "neighborhoods": [
+    {
+      "slug": "pagrati",
+      "name": "Pagrati",
+      "name_el": "Παγκράτι",
+      "zone": "center",
+      "lat": 37.968,
+      "lng": 23.747,
+      "typical_studio_rent": 560,
+      "scores": {
+        "safety": 4,
+        "quiet": 3,
+        "nightlife": 4,
+        "green": 3,
+        "amenities": 5,
+        "student_life": 4
+      },
+      "description": "Lively, walkable neighborhood next to the Panathenaic Stadium, full of cafés, tavernas and bars around Plateia Varnava and Plastira.",
+      "pros": [
+        {
+          "text": "Huge choice of cafés, bars and cheap food",
+          "factor": "nightlife"
+        },
+        {
+          "text": "Safe and busy until late",
+          "factor": "safety"
+        },
+        {
+          "text": "Everything you need within a few blocks",
+          "factor": "amenities"
+        },
+        {
+          "text": "Popular with students and young people",
+          "factor": "student_life"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro station: you rely on buses or a 15-minute walk to Evangelismos/Syntagma",
+          "factor": "transport"
+        },
+        {
+          "text": "Rents have risen a lot in recent years",
+          "factor": "rent"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "kypseli",
+      "name": "Kypseli",
+      "name_el": "Κυψέλη",
+      "zone": "center",
+      "lat": 38.0,
+      "lng": 23.738,
+      "typical_studio_rent": 430,
+      "scores": {
+        "safety": 3,
+        "quiet": 3,
+        "nightlife": 3,
+        "green": 3,
+        "amenities": 5,
+        "student_life": 3
+      },
+      "description": "Dense, diverse central neighborhood with the pedestrian Fokionos Negri street and the Pedion tou Areos park nearby.",
+      "pros": [
+        {
+          "text": "Cheaper than most central areas",
+          "factor": "rent"
+        },
+        {
+          "text": "Pedion tou Areos park and Fokionos Negri for walks",
+          "factor": "green"
+        },
+        {
+          "text": "Shops, markets and services everywhere",
+          "factor": "amenities"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro: buses/trolleys or a walk to Victoria/Ampelokipoi",
+          "factor": "transport"
+        },
+        {
+          "text": "Very dense, some streets feel run-down",
+          "factor": "safety"
+        },
+        {
+          "text": "Older buildings, check heating and insulation",
+          "factor": null
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "exarchia",
+      "name": "Exarchia",
+      "name_el": "Εξάρχεια",
+      "zone": "center",
+      "lat": 37.986,
+      "lng": 23.735,
+      "typical_studio_rent": 520,
+      "scores": {
+        "safety": 2,
+        "quiet": 1,
+        "nightlife": 5,
+        "green": 2,
+        "amenities": 5,
+        "student_life": 5
+      },
+      "description": "The historic student and alternative quarter, packed with bookshops, bars and cheap eats, walking distance from the center.",
+      "pros": [
+        {
+          "text": "The most student-heavy area in Athens",
+          "factor": "student_life"
+        },
+        {
+          "text": "Endless bars, live music and cheap food",
+          "factor": "nightlife"
+        },
+        {
+          "text": "Walk to Omonia, Panepistimio and the center",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Noisy, especially at night and on weekends",
+          "factor": "quiet"
+        },
+        {
+          "text": "Frequent demonstrations and police presence",
+          "factor": "safety"
+        },
+        {
+          "text": "Short-term rentals have pushed rents up",
+          "factor": "rent"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "neapoli",
+      "name": "Neapoli",
+      "name_el": "Νεάπολη",
+      "zone": "center",
+      "lat": 37.986,
+      "lng": 23.743,
+      "typical_studio_rent": 480,
+      "scores": {
+        "safety": 3,
+        "quiet": 3,
+        "nightlife": 4,
+        "green": 3,
+        "amenities": 4,
+        "student_life": 4
+      },
+      "description": "Quieter neighbor of Exarchia at the foot of Lycabettus, with the same student vibe but calmer streets.",
+      "pros": [
+        {
+          "text": "Close to Exarchia's nightlife without living in it",
+          "factor": "nightlife"
+        },
+        {
+          "text": "Lycabettus hill on your doorstep",
+          "factor": "green"
+        },
+        {
+          "text": "Walk to the city center",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Steep streets",
+          "factor": null
+        },
+        {
+          "text": "No metro station inside the area",
+          "factor": "transport"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "koukaki",
+      "name": "Koukaki",
+      "name_el": "Κουκάκι",
+      "zone": "center",
+      "lat": 37.964,
+      "lng": 23.724,
+      "typical_studio_rent": 620,
+      "scores": {
+        "safety": 4,
+        "quiet": 3,
+        "nightlife": 4,
+        "green": 4,
+        "amenities": 5,
+        "student_life": 3
+      },
+      "description": "Charming area below the Acropolis and Filopappou hill, with pedestrian streets and lots of cafés.",
+      "pros": [
+        {
+          "text": "Filopappou hill for walks and views",
+          "factor": "green"
+        },
+        {
+          "text": "Metro (Syngrou-Fix, Akropoli) and tram nearby",
+          "factor": "transport"
+        },
+        {
+          "text": "Safe, pleasant streets",
+          "factor": "safety"
+        }
+      ],
+      "cons": [
+        {
+          "text": "One of the most Airbnb-heavy areas: expensive and hard to find long-term rentals",
+          "factor": "rent"
+        },
+        {
+          "text": "Touristy in summer",
+          "factor": "quiet"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "ampelokipoi",
+      "name": "Ampelokipoi",
+      "name_el": "Αμπελόκηποι",
+      "zone": "center",
+      "lat": 37.987,
+      "lng": 23.759,
+      "typical_studio_rent": 500,
+      "scores": {
+        "safety": 4,
+        "quiet": 2,
+        "nightlife": 3,
+        "green": 2,
+        "amenities": 5,
+        "student_life": 3
+      },
+      "description": "Busy, central residential area around Alexandras and Kifisias avenues with excellent transport.",
+      "pros": [
+        {
+          "text": "Metro line 3 (Ambelokipi, Panormou)",
+          "factor": "transport"
+        },
+        {
+          "text": "Close to NKUA Goudi and NTUA/NKUA Zografou campuses",
+          "factor": "transport"
+        },
+        {
+          "text": "Every shop and service you need",
+          "factor": "amenities"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Heavy traffic and noise on the main avenues",
+          "factor": "quiet"
+        },
+        {
+          "text": "Few green spaces",
+          "factor": "green"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "gyzi",
+      "name": "Gyzi",
+      "name_el": "Γκύζη",
+      "zone": "center",
+      "lat": 37.995,
+      "lng": 23.746,
+      "typical_studio_rent": 460,
+      "scores": {
+        "safety": 4,
+        "quiet": 3,
+        "nightlife": 3,
+        "green": 2,
+        "amenities": 4,
+        "student_life": 3
+      },
+      "description": "Residential neighborhood between Kypseli and Ampelokipoi, quieter than both and reasonably priced.",
+      "pros": [
+        {
+          "text": "Good value for a central area",
+          "factor": "rent"
+        },
+        {
+          "text": "Calm residential streets",
+          "factor": "quiet"
+        },
+        {
+          "text": "Panormou metro (line 3) within walking distance",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Not much nightlife locally",
+          "factor": "nightlife"
+        },
+        {
+          "text": "Little green space",
+          "factor": "green"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "patisia",
+      "name": "Patisia",
+      "name_el": "Πατήσια",
+      "zone": "center",
+      "lat": 38.01,
+      "lng": 23.731,
+      "typical_studio_rent": 380,
+      "scores": {
+        "safety": 2,
+        "quiet": 2,
+        "nightlife": 2,
+        "green": 2,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Large, dense area along Patision street, one of the cheapest options with direct metro to the center.",
+      "pros": [
+        {
+          "text": "Among the cheapest rents in central Athens",
+          "factor": "rent"
+        },
+        {
+          "text": "Metro line 1 and many trolleys/buses",
+          "factor": "transport"
+        },
+        {
+          "text": "Close to AUEB and NTUA Patision",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Perceived as less safe, especially at night",
+          "factor": "safety"
+        },
+        {
+          "text": "Busy and noisy main roads",
+          "factor": "quiet"
+        },
+        {
+          "text": "Few parks",
+          "factor": "green"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "petralona",
+      "name": "Petralona",
+      "name_el": "Πετράλωνα",
+      "zone": "center",
+      "lat": 37.969,
+      "lng": 23.714,
+      "typical_studio_rent": 540,
+      "scores": {
+        "safety": 4,
+        "quiet": 3,
+        "nightlife": 4,
+        "green": 4,
+        "amenities": 4,
+        "student_life": 3
+      },
+      "description": "Neighborhood-feel area beside Filopappou hill, known for its tavernas and relaxed atmosphere.",
+      "pros": [
+        {
+          "text": "Metro line 1 (Petralona)",
+          "factor": "transport"
+        },
+        {
+          "text": "Filopappou hill next door",
+          "factor": "green"
+        },
+        {
+          "text": "Great tavernas and bars",
+          "factor": "nightlife"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Rents rising due to short-term rentals",
+          "factor": "rent"
+        },
+        {
+          "text": "Some streets near the rail line are noisy",
+          "factor": "quiet"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "neos-kosmos",
+      "name": "Neos Kosmos",
+      "name_el": "Νέος Κόσμος",
+      "zone": "center",
+      "lat": 37.958,
+      "lng": 23.731,
+      "typical_studio_rent": 470,
+      "scores": {
+        "safety": 3,
+        "quiet": 2,
+        "nightlife": 2,
+        "green": 2,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Practical residential area south of the center with metro and tram access.",
+      "pros": [
+        {
+          "text": "Metro line 2 and tram",
+          "factor": "transport"
+        },
+        {
+          "text": "More affordable than nearby Koukaki",
+          "factor": "rent"
+        },
+        {
+          "text": "Walking distance to the center",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Busy avenues (Syngrou, Vouliagmenis)",
+          "factor": "quiet"
+        },
+        {
+          "text": "Not much character or nightlife",
+          "factor": "nightlife"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "mets",
+      "name": "Mets",
+      "name_el": "Μετς",
+      "zone": "center",
+      "lat": 37.966,
+      "lng": 23.738,
+      "typical_studio_rent": 600,
+      "scores": {
+        "safety": 4,
+        "quiet": 4,
+        "nightlife": 3,
+        "green": 4,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Small, quiet, picturesque area near the Panathenaic Stadium and the National Garden.",
+      "pros": [
+        {
+          "text": "Quiet and pretty, very central",
+          "factor": "quiet"
+        },
+        {
+          "text": "Near the National Garden and Ardittos hill",
+          "factor": "green"
+        },
+        {
+          "text": "Safe",
+          "factor": "safety"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Expensive and few listings",
+          "factor": "rent"
+        },
+        {
+          "text": "Hilly, few shops",
+          "factor": "amenities"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "ilisia",
+      "name": "Ilisia",
+      "name_el": "Ιλίσια",
+      "zone": "center",
+      "lat": 37.978,
+      "lng": 23.757,
+      "typical_studio_rent": 580,
+      "scores": {
+        "safety": 5,
+        "quiet": 3,
+        "nightlife": 3,
+        "green": 3,
+        "amenities": 5,
+        "student_life": 4
+      },
+      "description": "Upmarket central area around Evangelismos and the Megaro Mousikis, a short ride from the Zografou campuses.",
+      "pros": [
+        {
+          "text": "Very safe and well-kept",
+          "factor": "safety"
+        },
+        {
+          "text": "Metro line 3 (Evangelismos, Megaro Mousikis)",
+          "factor": "transport"
+        },
+        {
+          "text": "Quick bus to NKUA/NTUA Zografou",
+          "factor": "transport"
+        },
+        {
+          "text": "Many students live here",
+          "factor": "student_life"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Pricier than nearby Zografou",
+          "factor": "rent"
+        },
+        {
+          "text": "Main avenues are busy",
+          "factor": "quiet"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "kolonaki",
+      "name": "Kolonaki",
+      "name_el": "Κολωνάκι",
+      "zone": "center",
+      "lat": 37.978,
+      "lng": 23.743,
+      "typical_studio_rent": 780,
+      "scores": {
+        "safety": 5,
+        "quiet": 3,
+        "nightlife": 4,
+        "green": 3,
+        "amenities": 5,
+        "student_life": 2
+      },
+      "description": "The most upscale central neighborhood, below Lycabettus, full of boutiques and cafés.",
+      "pros": [
+        {
+          "text": "Very safe",
+          "factor": "safety"
+        },
+        {
+          "text": "Walk to the center and NKUA's central buildings",
+          "factor": "transport"
+        },
+        {
+          "text": "Lycabettus hill",
+          "factor": "green"
+        }
+      ],
+      "cons": [
+        {
+          "text": "The most expensive area on the list",
+          "factor": "rent"
+        },
+        {
+          "text": "Not a student vibe",
+          "factor": "student_life"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "metaxourgeio",
+      "name": "Metaxourgeio",
+      "name_el": "Μεταξουργείο",
+      "zone": "center",
+      "lat": 37.985,
+      "lng": 23.721,
+      "typical_studio_rent": 430,
+      "scores": {
+        "safety": 2,
+        "quiet": 2,
+        "nightlife": 4,
+        "green": 1,
+        "amenities": 3,
+        "student_life": 3
+      },
+      "description": "Gentrifying area west of Omonia, close to Gazi's nightlife, with art spaces and new cafés.",
+      "pros": [
+        {
+          "text": "Metro line 2",
+          "factor": "transport"
+        },
+        {
+          "text": "Near Gazi and Psyrri nightlife",
+          "factor": "nightlife"
+        },
+        {
+          "text": "Affordable for how central it is",
+          "factor": "rent"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Some blocks feel unsafe at night",
+          "factor": "safety"
+        },
+        {
+          "text": "Almost no green space",
+          "factor": "green"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "kolonos",
+      "name": "Kolonos",
+      "name_el": "Κολωνός",
+      "zone": "center",
+      "lat": 37.997,
+      "lng": 23.718,
+      "typical_studio_rent": 390,
+      "scores": {
+        "safety": 3,
+        "quiet": 3,
+        "nightlife": 2,
+        "green": 2,
+        "amenities": 3,
+        "student_life": 2
+      },
+      "description": "Working-class residential area northwest of the center, cheap and quiet.",
+      "pros": [
+        {
+          "text": "Cheap rents",
+          "factor": "rent"
+        },
+        {
+          "text": "Quiet residential streets",
+          "factor": "quiet"
+        },
+        {
+          "text": "Close to KTEL Kifisou/Liosion and Larissis station",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro inside the area",
+          "factor": "transport"
+        },
+        {
+          "text": "Few things to do",
+          "factor": "nightlife"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "sepolia",
+      "name": "Sepolia",
+      "name_el": "Σεπόλια",
+      "zone": "center",
+      "lat": 38.003,
+      "lng": 23.717,
+      "typical_studio_rent": 380,
+      "scores": {
+        "safety": 3,
+        "quiet": 3,
+        "nightlife": 1,
+        "green": 2,
+        "amenities": 3,
+        "student_life": 2
+      },
+      "description": "Quiet residential area on metro line 2, handy for getting out of Athens.",
+      "pros": [
+        {
+          "text": "Metro line 2 (Sepolia)",
+          "factor": "transport"
+        },
+        {
+          "text": "Very close to KTEL Liosion and Larissis station",
+          "factor": "transport"
+        },
+        {
+          "text": "Cheap",
+          "factor": "rent"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Very little nightlife",
+          "factor": "nightlife"
+        },
+        {
+          "text": "Not many students",
+          "factor": "student_life"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "zografou",
+      "name": "Zografou",
+      "name_el": "Ζωγράφου",
+      "zone": "east",
+      "lat": 37.974,
+      "lng": 23.771,
+      "typical_studio_rent": 480,
+      "scores": {
+        "safety": 4,
+        "quiet": 3,
+        "nightlife": 3,
+        "green": 3,
+        "amenities": 4,
+        "student_life": 5
+      },
+      "description": "The classic student district, right next to the NKUA and NTUA Zografou campuses, at the foot of Mount Hymettus.",
+      "pros": [
+        {
+          "text": "Walk or a short bus ride to the NKUA/NTUA campuses",
+          "factor": "transport"
+        },
+        {
+          "text": "Thousands of students: easy to make friends",
+          "factor": "student_life"
+        },
+        {
+          "text": "Lots of cheap food and student cafés",
+          "factor": "nightlife"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro: buses to Evangelismos/Katehaki",
+          "factor": "transport"
+        },
+        {
+          "text": "High demand for flats before the academic year",
+          "factor": "rent"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "goudi",
+      "name": "Goudi",
+      "name_el": "Γουδή",
+      "zone": "east",
+      "lat": 37.98,
+      "lng": 23.77,
+      "typical_studio_rent": 520,
+      "scores": {
+        "safety": 4,
+        "quiet": 4,
+        "nightlife": 2,
+        "green": 4,
+        "amenities": 3,
+        "student_life": 4
+      },
+      "description": "Calm area by Goudi park and the NKUA medical school, between Ampelokipoi and Zografou.",
+      "pros": [
+        {
+          "text": "Next to NKUA Goudi (Medicine, Dentistry, Nursing)",
+          "factor": "transport"
+        },
+        {
+          "text": "Goudi park for running and walks",
+          "factor": "green"
+        },
+        {
+          "text": "Katehaki metro (line 3) nearby",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Few shops and bars in the area itself",
+          "factor": "amenities"
+        },
+        {
+          "text": "Small area, few listings",
+          "factor": "rent"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "kaisariani",
+      "name": "Kaisariani",
+      "name_el": "Καισαριανή",
+      "zone": "east",
+      "lat": 37.967,
+      "lng": 23.763,
+      "typical_studio_rent": 470,
+      "scores": {
+        "safety": 4,
+        "quiet": 3,
+        "nightlife": 3,
+        "green": 4,
+        "amenities": 4,
+        "student_life": 4
+      },
+      "description": "Historic, friendly neighborhood bordering Pagrati and Zografou, at the edge of Hymettus forest.",
+      "pros": [
+        {
+          "text": "Hymettus and Kaisariani forest for hiking",
+          "factor": "green"
+        },
+        {
+          "text": "Close to the Zografou campuses",
+          "factor": "transport"
+        },
+        {
+          "text": "Cheaper than Pagrati",
+          "factor": "rent"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro, buses only",
+          "factor": "transport"
+        },
+        {
+          "text": "Hilly streets",
+          "factor": null
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "vyronas",
+      "name": "Vyronas",
+      "name_el": "Βύρωνας",
+      "zone": "east",
+      "lat": 37.96,
+      "lng": 23.755,
+      "typical_studio_rent": 450,
+      "scores": {
+        "safety": 4,
+        "quiet": 4,
+        "nightlife": 2,
+        "green": 4,
+        "amenities": 4,
+        "student_life": 3
+      },
+      "description": "Quiet, green residential municipality below Hymettus, popular with families and students.",
+      "pros": [
+        {
+          "text": "Quiet and safe",
+          "factor": "quiet"
+        },
+        {
+          "text": "Green, close to the mountain",
+          "factor": "green"
+        },
+        {
+          "text": "Reasonable rents",
+          "factor": "rent"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro: buses to the center",
+          "factor": "transport"
+        },
+        {
+          "text": "Little nightlife",
+          "factor": "nightlife"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "ymittos",
+      "name": "Ymittos",
+      "name_el": "Υμηττός",
+      "zone": "east",
+      "lat": 37.954,
+      "lng": 23.743,
+      "typical_studio_rent": 470,
+      "scores": {
+        "safety": 4,
+        "quiet": 4,
+        "nightlife": 2,
+        "green": 3,
+        "amenities": 3,
+        "student_life": 2
+      },
+      "description": "Small, calm residential area between Pagrati and Dafni.",
+      "pros": [
+        {
+          "text": "Quiet and safe",
+          "factor": "quiet"
+        },
+        {
+          "text": "Walk to Pagrati for going out",
+          "factor": "nightlife"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro",
+          "factor": "transport"
+        },
+        {
+          "text": "Few students",
+          "factor": "student_life"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "cholargos",
+      "name": "Cholargos",
+      "name_el": "Χολαργός",
+      "zone": "east",
+      "lat": 38.0,
+      "lng": 23.798,
+      "typical_studio_rent": 560,
+      "scores": {
+        "safety": 5,
+        "quiet": 4,
+        "nightlife": 2,
+        "green": 4,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Leafy, safe northern-eastern suburb on metro line 3.",
+      "pros": [
+        {
+          "text": "Metro line 3 (Holargos)",
+          "factor": "transport"
+        },
+        {
+          "text": "Safe and green",
+          "factor": "safety"
+        },
+        {
+          "text": "Easy airport access on line 3",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Suburban, quiet at night",
+          "factor": "nightlife"
+        },
+        {
+          "text": "Higher rents",
+          "factor": "rent"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "papagou",
+      "name": "Papagou",
+      "name_el": "Παπάγου",
+      "zone": "east",
+      "lat": 37.989,
+      "lng": 23.794,
+      "typical_studio_rent": 620,
+      "scores": {
+        "safety": 5,
+        "quiet": 5,
+        "nightlife": 1,
+        "green": 4,
+        "amenities": 3,
+        "student_life": 1
+      },
+      "description": "Very quiet, green, upmarket residential suburb near Ethniki Amyna.",
+      "pros": [
+        {
+          "text": "Very safe and quiet",
+          "factor": "safety"
+        },
+        {
+          "text": "Lots of greenery",
+          "factor": "green"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Expensive",
+          "factor": "rent"
+        },
+        {
+          "text": "Almost no nightlife or student life",
+          "factor": "student_life"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "agia-paraskevi",
+      "name": "Agia Paraskevi",
+      "name_el": "Αγία Παρασκευή",
+      "zone": "east",
+      "lat": 38.01,
+      "lng": 23.823,
+      "typical_studio_rent": 560,
+      "scores": {
+        "safety": 5,
+        "quiet": 4,
+        "nightlife": 3,
+        "green": 4,
+        "amenities": 5,
+        "student_life": 3
+      },
+      "description": "Self-contained suburb with its own center, shops and nightlife, on metro line 3.",
+      "pros": [
+        {
+          "text": "Metro line 3 and direct line to the airport",
+          "factor": "transport"
+        },
+        {
+          "text": "Safe and well-equipped",
+          "factor": "safety"
+        },
+        {
+          "text": "Lively local square with cafés",
+          "factor": "nightlife"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Far from the western and southern campuses",
+          "factor": "transport"
+        },
+        {
+          "text": "Pricier than central areas of similar size",
+          "factor": "rent"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "chalandri",
+      "name": "Chalandri",
+      "name_el": "Χαλάνδρι",
+      "zone": "east",
+      "lat": 38.021,
+      "lng": 23.799,
+      "typical_studio_rent": 580,
+      "scores": {
+        "safety": 5,
+        "quiet": 4,
+        "nightlife": 4,
+        "green": 4,
+        "amenities": 5,
+        "student_life": 3
+      },
+      "description": "Popular northern suburb with a lively main square full of bars and restaurants.",
+      "pros": [
+        {
+          "text": "Metro line 3",
+          "factor": "transport"
+        },
+        {
+          "text": "One of the best suburban nightlife spots",
+          "factor": "nightlife"
+        },
+        {
+          "text": "Safe, with parks and the Pikrodafni stream",
+          "factor": "safety"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Long commute to central and western campuses",
+          "factor": "transport"
+        },
+        {
+          "text": "Higher rents",
+          "factor": "rent"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "galatsi",
+      "name": "Galatsi",
+      "name_el": "Γαλάτσι",
+      "zone": "north",
+      "lat": 38.018,
+      "lng": 23.753,
+      "typical_studio_rent": 440,
+      "scores": {
+        "safety": 4,
+        "quiet": 4,
+        "nightlife": 2,
+        "green": 4,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Residential area next to the Tourkovounia hills and Veikou park.",
+      "pros": [
+        {
+          "text": "Big parks: Veikou and Tourkovounia",
+          "factor": "green"
+        },
+        {
+          "text": "Quiet and safe",
+          "factor": "quiet"
+        },
+        {
+          "text": "Affordable",
+          "factor": "rent"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro yet (buses only)",
+          "factor": "transport"
+        },
+        {
+          "text": "Little nightlife",
+          "factor": "nightlife"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "nea-ionia",
+      "name": "Nea Ionia",
+      "name_el": "Νέα Ιωνία",
+      "zone": "north",
+      "lat": 38.041,
+      "lng": 23.756,
+      "typical_studio_rent": 420,
+      "scores": {
+        "safety": 4,
+        "quiet": 4,
+        "nightlife": 2,
+        "green": 3,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Quiet northern municipality with good shopping on metro line 1.",
+      "pros": [
+        {
+          "text": "Metro line 1",
+          "factor": "transport"
+        },
+        {
+          "text": "Affordable and quiet",
+          "factor": "rent"
+        },
+        {
+          "text": "Good local market and shops",
+          "factor": "amenities"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Far from most campuses",
+          "factor": "transport"
+        },
+        {
+          "text": "Few students",
+          "factor": "student_life"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "nea-filadelfeia",
+      "name": "Nea Filadelfeia",
+      "name_el": "Νέα Φιλαδέλφεια",
+      "zone": "north",
+      "lat": 38.035,
+      "lng": 23.738,
+      "typical_studio_rent": 430,
+      "scores": {
+        "safety": 4,
+        "quiet": 4,
+        "nightlife": 2,
+        "green": 4,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Calm area with the large Alsos Neas Filadelfeias park.",
+      "pros": [
+        {
+          "text": "Large park (Alsos)",
+          "factor": "green"
+        },
+        {
+          "text": "Quiet and affordable",
+          "factor": "quiet"
+        },
+        {
+          "text": "Close to KTEL Liosion",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro inside the area",
+          "factor": "transport"
+        },
+        {
+          "text": "Little to do at night",
+          "factor": "nightlife"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "marousi",
+      "name": "Marousi",
+      "name_el": "Μαρούσι",
+      "zone": "north",
+      "lat": 38.049,
+      "lng": 23.806,
+      "typical_studio_rent": 560,
+      "scores": {
+        "safety": 5,
+        "quiet": 4,
+        "nightlife": 3,
+        "green": 3,
+        "amenities": 5,
+        "student_life": 2
+      },
+      "description": "Business hub of the north with malls, offices and metro line 1 plus the suburban railway.",
+      "pros": [
+        {
+          "text": "Metro line 1 and suburban railway",
+          "factor": "transport"
+        },
+        {
+          "text": "Safe, modern, everything nearby",
+          "factor": "safety"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Far from the center and most campuses",
+          "factor": "transport"
+        },
+        {
+          "text": "Higher rents",
+          "factor": "rent"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "kifisia",
+      "name": "Kifisia",
+      "name_el": "Κηφισιά",
+      "zone": "north",
+      "lat": 38.074,
+      "lng": 23.811,
+      "typical_studio_rent": 700,
+      "scores": {
+        "safety": 5,
+        "quiet": 5,
+        "nightlife": 3,
+        "green": 5,
+        "amenities": 5,
+        "student_life": 1
+      },
+      "description": "Affluent, green northern suburb at the end of metro line 1.",
+      "pros": [
+        {
+          "text": "Very safe and green",
+          "factor": "safety"
+        },
+        {
+          "text": "Beautiful area with lots of shops",
+          "factor": "amenities"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Very expensive",
+          "factor": "rent"
+        },
+        {
+          "text": "Long commute to almost every campus",
+          "factor": "transport"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "ano-patisia",
+      "name": "Ano Patisia",
+      "name_el": "Άνω Πατήσια",
+      "zone": "north",
+      "lat": 38.02,
+      "lng": 23.729,
+      "typical_studio_rent": 400,
+      "scores": {
+        "safety": 3,
+        "quiet": 3,
+        "nightlife": 2,
+        "green": 2,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Residential area at the top of Patision street, cheaper than the center with metro line 1.",
+      "pros": [
+        {
+          "text": "Metro line 1",
+          "factor": "transport"
+        },
+        {
+          "text": "Cheap",
+          "factor": "rent"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Not much student life",
+          "factor": "student_life"
+        },
+        {
+          "text": "Few parks",
+          "factor": "green"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "nea-smyrni",
+      "name": "Nea Smyrni",
+      "name_el": "Νέα Σμύρνη",
+      "zone": "south",
+      "lat": 37.945,
+      "lng": 23.714,
+      "typical_studio_rent": 560,
+      "scores": {
+        "safety": 5,
+        "quiet": 4,
+        "nightlife": 3,
+        "green": 4,
+        "amenities": 5,
+        "student_life": 3
+      },
+      "description": "Pleasant, safe area with a big central square, a large park and the tram.",
+      "pros": [
+        {
+          "text": "Very safe and family-friendly",
+          "factor": "safety"
+        },
+        {
+          "text": "Alsos Neas Smyrnis park",
+          "factor": "green"
+        },
+        {
+          "text": "Tram to the center and the beach",
+          "factor": "transport"
+        },
+        {
+          "text": "Close to Panteion and Harokopio",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro",
+          "factor": "transport"
+        },
+        {
+          "text": "Higher rents",
+          "factor": "rent"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "kallithea",
+      "name": "Kallithea",
+      "name_el": "Καλλιθέα",
+      "zone": "south",
+      "lat": 37.955,
+      "lng": 23.702,
+      "typical_studio_rent": 460,
+      "scores": {
+        "safety": 4,
+        "quiet": 2,
+        "nightlife": 3,
+        "green": 2,
+        "amenities": 5,
+        "student_life": 4
+      },
+      "description": "Large, dense area that is home to Panteion and Harokopio universities.",
+      "pros": [
+        {
+          "text": "Walk to Panteion and Harokopio",
+          "factor": "transport"
+        },
+        {
+          "text": "Metro line 1 and tram",
+          "factor": "transport"
+        },
+        {
+          "text": "Lots of students",
+          "factor": "student_life"
+        },
+        {
+          "text": "Affordable",
+          "factor": "rent"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Very dense, little green space",
+          "factor": "green"
+        },
+        {
+          "text": "Busy roads",
+          "factor": "quiet"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "palaio-faliro",
+      "name": "Palaio Faliro",
+      "name_el": "Παλαιό Φάληρο",
+      "zone": "south",
+      "lat": 37.929,
+      "lng": 23.7,
+      "typical_studio_rent": 620,
+      "scores": {
+        "safety": 5,
+        "quiet": 4,
+        "nightlife": 3,
+        "green": 4,
+        "amenities": 5,
+        "student_life": 2
+      },
+      "description": "Seaside suburb with a marina, beaches and the tram along the coast.",
+      "pros": [
+        {
+          "text": "By the sea",
+          "factor": "green"
+        },
+        {
+          "text": "Safe",
+          "factor": "safety"
+        },
+        {
+          "text": "Tram along the coast",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Expensive",
+          "factor": "rent"
+        },
+        {
+          "text": "No metro; far from northern campuses",
+          "factor": "transport"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "dafni",
+      "name": "Dafni",
+      "name_el": "Δάφνη",
+      "zone": "south",
+      "lat": 37.948,
+      "lng": 23.737,
+      "typical_studio_rent": 480,
+      "scores": {
+        "safety": 4,
+        "quiet": 3,
+        "nightlife": 2,
+        "green": 3,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Residential area on metro line 2, a quick ride to Syntagma.",
+      "pros": [
+        {
+          "text": "Metro line 2",
+          "factor": "transport"
+        },
+        {
+          "text": "NKUA Physical Education campus is here",
+          "factor": "transport"
+        },
+        {
+          "text": "Mid-range rents",
+          "factor": "rent"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Not much nightlife",
+          "factor": "nightlife"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "agios-dimitrios",
+      "name": "Agios Dimitrios",
+      "name_el": "Άγιος Δημήτριος",
+      "zone": "south",
+      "lat": 37.934,
+      "lng": 23.732,
+      "typical_studio_rent": 470,
+      "scores": {
+        "safety": 4,
+        "quiet": 3,
+        "nightlife": 2,
+        "green": 3,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Practical southern suburb on metro line 2.",
+      "pros": [
+        {
+          "text": "Metro line 2",
+          "factor": "transport"
+        },
+        {
+          "text": "Affordable for the south",
+          "factor": "rent"
+        },
+        {
+          "text": "Good shops",
+          "factor": "amenities"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Few students",
+          "factor": "student_life"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "alimos",
+      "name": "Alimos",
+      "name_el": "Άλιμος",
+      "zone": "south",
+      "lat": 37.911,
+      "lng": 23.718,
+      "typical_studio_rent": 600,
+      "scores": {
+        "safety": 5,
+        "quiet": 4,
+        "nightlife": 3,
+        "green": 4,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Seaside suburb with a marina, on metro line 2.",
+      "pros": [
+        {
+          "text": "Metro line 2 and the sea",
+          "factor": "transport"
+        },
+        {
+          "text": "Safe",
+          "factor": "safety"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Expensive",
+          "factor": "rent"
+        },
+        {
+          "text": "Long commute to northern/eastern campuses",
+          "factor": "transport"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "glyfada",
+      "name": "Glyfada",
+      "name_el": "Γλυφάδα",
+      "zone": "south",
+      "lat": 37.864,
+      "lng": 23.753,
+      "typical_studio_rent": 720,
+      "scores": {
+        "safety": 5,
+        "quiet": 4,
+        "nightlife": 4,
+        "green": 4,
+        "amenities": 5,
+        "student_life": 2
+      },
+      "description": "Upmarket coastal suburb with beaches, shopping and nightlife.",
+      "pros": [
+        {
+          "text": "Beaches and seaside life",
+          "factor": "green"
+        },
+        {
+          "text": "Great nightlife in summer",
+          "factor": "nightlife"
+        },
+        {
+          "text": "Safe",
+          "factor": "safety"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Very expensive",
+          "factor": "rent"
+        },
+        {
+          "text": "Far from almost every campus (tram/bus only)",
+          "factor": "transport"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "moschato",
+      "name": "Moschato",
+      "name_el": "Μοσχάτο",
+      "zone": "south",
+      "lat": 37.953,
+      "lng": 23.68,
+      "typical_studio_rent": 440,
+      "scores": {
+        "safety": 4,
+        "quiet": 3,
+        "nightlife": 2,
+        "green": 2,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Quiet area on metro line 1 between Kallithea and Piraeus.",
+      "pros": [
+        {
+          "text": "Metro line 1",
+          "factor": "transport"
+        },
+        {
+          "text": "Affordable",
+          "factor": "rent"
+        },
+        {
+          "text": "Close to Piraeus port",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Little going on at night",
+          "factor": "nightlife"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "tavros",
+      "name": "Tavros",
+      "name_el": "Ταύρος",
+      "zone": "south",
+      "lat": 37.961,
+      "lng": 23.697,
+      "typical_studio_rent": 420,
+      "scores": {
+        "safety": 3,
+        "quiet": 3,
+        "nightlife": 2,
+        "green": 2,
+        "amenities": 4,
+        "student_life": 3
+      },
+      "description": "Affordable area near Panteion, Harokopio and the Athens School of Fine Arts.",
+      "pros": [
+        {
+          "text": "Cheap",
+          "factor": "rent"
+        },
+        {
+          "text": "Metro line 1",
+          "factor": "transport"
+        },
+        {
+          "text": "Near Panteion, Harokopio and ASFA",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Industrial in parts",
+          "factor": "safety"
+        },
+        {
+          "text": "Few parks",
+          "factor": "green"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "egaleo",
+      "name": "Egaleo",
+      "name_el": "Αιγάλεω",
+      "zone": "west",
+      "lat": 37.992,
+      "lng": 23.682,
+      "typical_studio_rent": 400,
+      "scores": {
+        "safety": 3,
+        "quiet": 3,
+        "nightlife": 3,
+        "green": 3,
+        "amenities": 4,
+        "student_life": 4
+      },
+      "description": "Western suburb with its own lively center, home to the University of West Attica campuses.",
+      "pros": [
+        {
+          "text": "Next to UniWA (Egaleo Park and Ancient Olive Grove)",
+          "factor": "transport"
+        },
+        {
+          "text": "Metro line 3",
+          "factor": "transport"
+        },
+        {
+          "text": "Cheap",
+          "factor": "rent"
+        },
+        {
+          "text": "Many UniWA students",
+          "factor": "student_life"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Far from the eastern campuses",
+          "factor": "transport"
+        },
+        {
+          "text": "Perceived as less safe in some parts",
+          "factor": "safety"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "peristeri",
+      "name": "Peristeri",
+      "name_el": "Περιστέρι",
+      "zone": "west",
+      "lat": 38.013,
+      "lng": 23.691,
+      "typical_studio_rent": 400,
+      "scores": {
+        "safety": 3,
+        "quiet": 3,
+        "nightlife": 3,
+        "green": 2,
+        "amenities": 5,
+        "student_life": 3
+      },
+      "description": "One of Athens' largest municipalities, with a busy commercial center and metro line 2.",
+      "pros": [
+        {
+          "text": "Metro line 2",
+          "factor": "transport"
+        },
+        {
+          "text": "Cheap",
+          "factor": "rent"
+        },
+        {
+          "text": "Everything you need locally",
+          "factor": "amenities"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Very dense",
+          "factor": "green"
+        },
+        {
+          "text": "Long trip to the eastern campuses",
+          "factor": "transport"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "ilion",
+      "name": "Ilion",
+      "name_el": "Ίλιον",
+      "zone": "west",
+      "lat": 38.033,
+      "lng": 23.7,
+      "typical_studio_rent": 380,
+      "scores": {
+        "safety": 3,
+        "quiet": 4,
+        "nightlife": 2,
+        "green": 3,
+        "amenities": 3,
+        "student_life": 2
+      },
+      "description": "Quiet residential suburb in the northwest.",
+      "pros": [
+        {
+          "text": "Cheap",
+          "factor": "rent"
+        },
+        {
+          "text": "Quiet",
+          "factor": "quiet"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro",
+          "factor": "transport"
+        },
+        {
+          "text": "Little student life",
+          "factor": "student_life"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "petroupoli",
+      "name": "Petroupoli",
+      "name_el": "Πετρούπολη",
+      "zone": "west",
+      "lat": 38.041,
+      "lng": 23.685,
+      "typical_studio_rent": 400,
+      "scores": {
+        "safety": 4,
+        "quiet": 4,
+        "nightlife": 2,
+        "green": 4,
+        "amenities": 3,
+        "student_life": 2
+      },
+      "description": "Green, quiet suburb with the large Petroupoli park and open-air theater.",
+      "pros": [
+        {
+          "text": "Large park and open-air theater",
+          "factor": "green"
+        },
+        {
+          "text": "Quiet and safe",
+          "factor": "safety"
+        },
+        {
+          "text": "Cheap",
+          "factor": "rent"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro",
+          "factor": "transport"
+        },
+        {
+          "text": "Far from most campuses",
+          "factor": "transport"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "piraeus",
+      "name": "Piraeus",
+      "name_el": "Πειραιάς",
+      "zone": "piraeus",
+      "lat": 37.944,
+      "lng": 23.647,
+      "typical_studio_rent": 460,
+      "scores": {
+        "safety": 3,
+        "quiet": 2,
+        "nightlife": 4,
+        "green": 3,
+        "amenities": 5,
+        "student_life": 4
+      },
+      "description": "Port city with its own center, the University of Piraeus and lively waterfronts at Pasalimani and Mikrolimano.",
+      "pros": [
+        {
+          "text": "Next to the University of Piraeus",
+          "factor": "transport"
+        },
+        {
+          "text": "Metro lines 1 and 3, tram, suburban rail and the port",
+          "factor": "transport"
+        },
+        {
+          "text": "Waterfront cafés and nightlife",
+          "factor": "nightlife"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Some areas near the port are rough at night",
+          "factor": "safety"
+        },
+        {
+          "text": "Far from the eastern campuses",
+          "factor": "transport"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "neo-faliro",
+      "name": "Neo Faliro",
+      "name_el": "Νέο Φάληρο",
+      "zone": "piraeus",
+      "lat": 37.945,
+      "lng": 23.665,
+      "typical_studio_rent": 480,
+      "scores": {
+        "safety": 4,
+        "quiet": 3,
+        "nightlife": 3,
+        "green": 3,
+        "amenities": 4,
+        "student_life": 3
+      },
+      "description": "Area between Piraeus and Faliro around the Peace & Friendship Stadium.",
+      "pros": [
+        {
+          "text": "Metro line 1 and tram",
+          "factor": "transport"
+        },
+        {
+          "text": "Close to the University of Piraeus",
+          "factor": "transport"
+        },
+        {
+          "text": "Near the sea",
+          "factor": "green"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Busy on match/event days",
+          "factor": "quiet"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "nikaia",
+      "name": "Nikaia",
+      "name_el": "Νίκαια",
+      "zone": "piraeus",
+      "lat": 37.967,
+      "lng": 23.648,
+      "typical_studio_rent": 400,
+      "scores": {
+        "safety": 3,
+        "quiet": 3,
+        "nightlife": 2,
+        "green": 2,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Large, affordable municipality on metro line 3.",
+      "pros": [
+        {
+          "text": "Metro line 3",
+          "factor": "transport"
+        },
+        {
+          "text": "Cheap",
+          "factor": "rent"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Not much nightlife",
+          "factor": "nightlife"
+        },
+        {
+          "text": "Few parks",
+          "factor": "green"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "korydallos",
+      "name": "Korydallos",
+      "name_el": "Κορυδαλλός",
+      "zone": "piraeus",
+      "lat": 37.983,
+      "lng": 23.651,
+      "typical_studio_rent": 400,
+      "scores": {
+        "safety": 3,
+        "quiet": 3,
+        "nightlife": 2,
+        "green": 2,
+        "amenities": 4,
+        "student_life": 2
+      },
+      "description": "Residential area on metro line 3 between Piraeus and Egaleo.",
+      "pros": [
+        {
+          "text": "Metro line 3",
+          "factor": "transport"
+        },
+        {
+          "text": "Cheap",
+          "factor": "rent"
+        },
+        {
+          "text": "Close to UniWA",
+          "factor": "transport"
+        }
+      ],
+      "cons": [
+        {
+          "text": "Few students",
+          "factor": "student_life"
+        }
+      ],
+      "sources": []
+    },
+    {
+      "slug": "keratsini",
+      "name": "Keratsini",
+      "name_el": "Κερατσίνι",
+      "zone": "piraeus",
+      "lat": 37.962,
+      "lng": 23.62,
+      "typical_studio_rent": 380,
+      "scores": {
+        "safety": 3,
+        "quiet": 3,
+        "nightlife": 2,
+        "green": 2,
+        "amenities": 4,
+        "student_life": 1
+      },
+      "description": "Working-class western suburb of Piraeus, one of the cheapest options.",
+      "pros": [
+        {
+          "text": "Very cheap",
+          "factor": "rent"
+        }
+      ],
+      "cons": [
+        {
+          "text": "No metro",
+          "factor": "transport"
+        },
+        {
+          "text": "Few students and little to do",
+          "factor": "student_life"
+        }
+      ],
+      "sources": []
+    }
+  ]
+}

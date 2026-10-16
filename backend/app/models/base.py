@@ -18,6 +18,8 @@ class Base(DeclarativeBase):
 # Supabase-managed table; declared only so foreign keys resolve.
 # Alembic's env.py excludes the auth schema, so it is never migrated.
 auth_users = Table(
-    "users", Base.metadata, Column("id", UUID(as_uuid=True), primary_key=True),
+    "users",
+    Base.metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True),
     schema="auth",
 )

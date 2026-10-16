@@ -25,6 +25,8 @@ ruff check . && ruff format .
 Other:
 ```bash
 alembic upgrade head                                              # from backend/, uses DIRECT_URL
+python -m scripts.seed                                            # load data/athens.json (idempotent)
+TEST_DATABASE_URL=postgresql://postgres:test@localhost:55432/postgres pytest  # incl. DB tests (see README)
 alembic revision --autogenerate -m "msg"                          # after editing app/models
 stripe listen --forward-to localhost:8000/api/v1/billing/webhook  # local Stripe webhooks
 ```
@@ -47,4 +49,6 @@ Env: copy `frontend/.env.example` → `.env.local` and `backend/.env.example` �
 
 **RLS & billing fields.** `profiles` rows are auto-created by a trigger on `auth.users` insert. Users may update their own profile directly via Supabase, but `is_premium` and `stripe_customer_id` have UPDATE revoked from `authenticated` — only the backend writes them. Premium is a one-time Stripe Checkout payment (`mode: payment`): `POST /billing/checkout` sets `client_reference_id = user.id`, and the `checkout.session.completed` webhook flips `is_premium`. `cities`/`universities` are public-read reference data.
 
-**Caching.** `GET /users/me` caches the profile in Upstash under `profile:{user_id}` (5 min); any write path that changes a profile must `cache_delete` that key (`PATCH /users/me` and the Stripe webhook both do).
+**Neighborhood match (the core feature).** `data/athens.json` is the source of truth for areas, universities, campuses, departments and hubs; `scripts/seed.py` upserts it by slug and fills `travel_times` with distance estimates (`source='estimate'`) only where rows are missing; `scripts/compute_travel_times.py` overwrites them with Google Routes data (`source='google'`). `services/matching.py` is pure (no I/O): 1–5 scores map to 0–1, rent/commute/home are inverted min–max across the city, weighted by the 0–5 sliders, filtered by `max_rent`/`max_commute`, top 3 returned with `drivers` (largest contributions where the area scores ≥0.6) and pros/cons re-ordered by the student's priorities (`factor: "transport"` follows the commute/home weight). `services/places.py` loads data and caches it in Upstash under `places:v1:*` (6h TTL, bump the prefix if cached shapes change). `/match/save` recomputes server-side rather than trusting client results. Frontend: `/match` is a client flow (`MatchFlow.tsx`) fed by a server loader; server pages call `getPublic()` (`lib/api/server.ts`, `"use cache"`) only after `await connection()` / inside Suspense so `next build` never needs the API.
+
+**Caching.** `GET /users/me` caches the profile in Upstash under `profile:{user_id}` (5 min); any write path that changes a profile must `cache_delete` that key (`PATCH /users/me` and the Stripe webhook both do). All cache helpers no-op when Upstash isn't configured and swallow Upstash errors, so the API works without it.

@@ -1,0 +1,236 @@
+"""Read-side queries for reference data (cached in Upstash)."""
+
+import uuid
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models import (
+    Campus,
+    Department,
+    Neighborhood,
+    TransitHub,
+    TravelTime,
+    University,
+)
+from app.schemas.places import (
+    HubOut,
+    NeighborhoodDetail,
+    NeighborhoodSummary,
+    Scores,
+    TravelTimeOut,
+    UniversityOut,
+)
+from app.services.cache import cache_get, cache_set
+from app.services.matching import SCORE_FACTORS, AreaInput
+
+# Bump when the shape of cached values changes. Reference data only changes
+# when scripts/seed.py or compute_travel_times.py runs; TTL bounds staleness.
+PREFIX = "places:v1"
+TTL = 6 * 3600
+
+
+def _scores(n: Neighborhood) -> Scores:
+    return Scores(**{f: getattr(n, f) for f in SCORE_FACTORS})
+
+
+def _summary(n: Neighborhood) -> NeighborhoodSummary:
+    return NeighborhoodSummary(
+        slug=n.slug,
+        name=n.name,
+        name_el=n.name_el,
+        zone=n.zone,
+        lat=n.lat,
+        lng=n.lng,
+        typical_studio_rent=n.typical_studio_rent,
+        scores=_scores(n),
+    )
+
+
+async def list_universities(db: AsyncSession) -> list[UniversityOut]:
+    key = f"{PREFIX}:universities"
+    if cached := await cache_get(key):
+        return [UniversityOut(**u) for u in cached]
+
+    unis = (await db.scalars(select(University).order_by(University.name))).all()
+    campuses = (await db.scalars(select(Campus).order_by(Campus.name))).all()
+    depts = (await db.scalars(select(Department).order_by(Department.name))).all()
+    campus_slug = {c.id: c.slug for c in campuses}
+
+    out = [
+        UniversityOut(
+            slug=u.slug,
+            name=u.name,
+            short_name=u.short_name,
+            campuses=[
+                {"slug": c.slug, "name": c.name, "lat": c.lat, "lng": c.lng}
+                for c in campuses
+                if c.university_id == u.id
+            ],
+            departments=[
+                {"id": d.id, "name": d.name, "campus_slug": campus_slug[d.campus_id]}
+                for d in depts
+                if d.university_id == u.id
+            ],
+        )
+        for u in unis
+    ]
+    await cache_set(key, [u.model_dump(mode="json") for u in out], TTL)
+    return out
+
+
+async def list_hubs(db: AsyncSession) -> list[HubOut]:
+    key = f"{PREFIX}:hubs"
+    if cached := await cache_get(key):
+        return [HubOut(**h) for h in cached]
+
+    hubs = (
+        await db.scalars(select(TransitHub).order_by(TransitHub.kind, TransitHub.name))
+    ).all()
+    out = [
+        HubOut(
+            slug=h.slug, name=h.name, kind=h.kind, serves=h.serves, lat=h.lat, lng=h.lng
+        )
+        for h in hubs
+    ]
+    await cache_set(key, [h.model_dump(mode="json") for h in out], TTL)
+    return out
+
+
+async def list_neighborhoods(db: AsyncSession) -> list[NeighborhoodSummary]:
+    key = f"{PREFIX}:neighborhoods"
+    if cached := await cache_get(key):
+        return [NeighborhoodSummary(**n) for n in cached]
+
+    hoods = (await db.scalars(select(Neighborhood).order_by(Neighborhood.name))).all()
+    out = [_summary(n) for n in hoods]
+    await cache_set(key, [n.model_dump(mode="json") for n in out], TTL)
+    return out
+
+
+async def get_neighborhood(db: AsyncSession, slug: str) -> NeighborhoodDetail | None:
+    key = f"{PREFIX}:neighborhood:{slug}"
+    if cached := await cache_get(key):
+        return NeighborhoodDetail(**cached)
+
+    n = await db.scalar(select(Neighborhood).where(Neighborhood.slug == slug))
+    if n is None:
+        return None
+
+    campus_rows = (
+        await db.execute(
+            select(TravelTime, Campus, University)
+            .join(Campus, TravelTime.campus_id == Campus.id)
+            .join(University, Campus.university_id == University.id)
+            .where(TravelTime.neighborhood_id == n.id)
+            .order_by(TravelTime.transit_minutes)
+        )
+    ).all()
+    hub_rows = (
+        await db.execute(
+            select(TravelTime, TransitHub)
+            .join(TransitHub, TravelTime.hub_id == TransitHub.id)
+            .where(TravelTime.neighborhood_id == n.id)
+            .order_by(TravelTime.transit_minutes)
+        )
+    ).all()
+
+    travel = [
+        TravelTimeOut(
+            destination_slug=c.slug,
+            destination_name=c.name,
+            destination_type="campus",
+            group=u.short_name,
+            minutes=t.transit_minutes,
+            estimated=t.source == "estimate",
+        )
+        for t, c, u in campus_rows
+    ] + [
+        TravelTimeOut(
+            destination_slug=h.slug,
+            destination_name=h.name,
+            destination_type="hub",
+            group=h.kind,
+            minutes=t.transit_minutes,
+            estimated=t.source == "estimate",
+        )
+        for t, h in hub_rows
+    ]
+
+    out = NeighborhoodDetail(
+        **_summary(n).model_dump(),
+        description=n.description,
+        pros=n.pros,
+        cons=n.cons,
+        sources=n.sources,
+        travel_times=travel,
+    )
+    await cache_set(key, out.model_dump(mode="json"), TTL)
+    return out
+
+
+async def get_department(
+    db: AsyncSession, department_id: uuid.UUID
+) -> Department | None:
+    return await db.get(Department, department_id)
+
+
+async def load_match_inputs(
+    db: AsyncSession, campus_id: uuid.UUID, hub_slug: str | None
+) -> list[AreaInput]:
+    """Every area in the campus's city, with commute (and home trip) minutes."""
+    key = f"{PREFIX}:match-inputs:{campus_id}:{hub_slug or '-'}"
+    if cached := await cache_get(key):
+        return [AreaInput(**a) for a in cached]
+
+    campus = await db.get(Campus, campus_id)
+    if campus is None:
+        return []
+    university = await db.get(University, campus.university_id)
+
+    rows = (
+        await db.execute(
+            select(Neighborhood, TravelTime)
+            .join(TravelTime, TravelTime.neighborhood_id == Neighborhood.id)
+            .where(
+                Neighborhood.city_id == university.city_id,
+                TravelTime.campus_id == campus_id,
+            )
+        )
+    ).all()
+
+    home: dict[uuid.UUID, TravelTime] = {}
+    if hub_slug:
+        hub_rows = (
+            await db.execute(
+                select(TravelTime)
+                .join(TransitHub, TravelTime.hub_id == TransitHub.id)
+                .where(TransitHub.slug == hub_slug)
+            )
+        ).scalars()
+        home = {t.neighborhood_id: t for t in hub_rows}
+
+    out = []
+    for n, t in rows:
+        h = home.get(n.id)
+        out.append(
+            AreaInput(
+                slug=n.slug,
+                name=n.name,
+                name_el=n.name_el,
+                zone=n.zone,
+                lat=n.lat,
+                lng=n.lng,
+                description=n.description,
+                typical_studio_rent=n.typical_studio_rent,
+                scores={f: getattr(n, f) for f in SCORE_FACTORS},
+                pros=n.pros,
+                cons=n.cons,
+                commute_minutes=t.transit_minutes,
+                commute_estimated=t.source == "estimate",
+                home_minutes=h.transit_minutes if h else None,
+                home_estimated=(h.source == "estimate") if h else None,
+            )
+        )
+    await cache_set(key, [a.__dict__ for a in out], TTL)
+    return out
