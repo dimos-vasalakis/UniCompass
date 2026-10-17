@@ -2,14 +2,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getUser } from "@/lib/supabase/server";
+import { SignOutButton } from "./SignOutButton";
 
 async function AccountLinks() {
   const user = await getUser();
   if (user) {
     return (
-      <Link href="/dashboard" className="font-medium text-brand hover:underline">
-        My account
-      </Link>
+      <>
+        <Link href="/dashboard" className="font-medium text-brand hover:underline">
+          My account
+        </Link>
+        <SignOutButton />
+      </>
     );
   }
   return (
@@ -39,7 +43,7 @@ export function SiteHeader() {
           All areas
         </Link>
         {/* inline-block so the width applies: reserves room for the auth links. */}
-        <Suspense fallback={<span aria-hidden className="inline-block h-8 w-36" />}>
+        <Suspense fallback={<span aria-hidden className="inline-block h-8 w-44" />}>
           <AccountLinks />
         </Suspense>
       </nav>
