@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     upstash_redis_rest_url: str = ""
     upstash_redis_rest_token: str = ""
 
+    sentry_dsn: str = ""
+
     # Only used by scripts/compute_travel_times.py, never at request time.
     google_maps_api_key: str = ""
 

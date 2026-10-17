@@ -2,6 +2,7 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -13,6 +14,14 @@ from app.core.db import get_engine
 
 settings = get_settings()
 logger = logging.getLogger("uvicorn.error")
+
+if not is_unset(settings.sentry_dsn):
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        environment=settings.environment,
+        traces_sample_rate=1.0 if settings.environment == "development" else 0.1,
+        enable_logs=True,
+    )
 
 
 @asynccontextmanager
