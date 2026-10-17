@@ -60,7 +60,6 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
   const [error, setError] = useState<string | null>(
     params.get("error") === "auth" ? "That sign-in link is invalid or has expired. Please try again." : null,
   );
-  const [noAccount, setNoAccount] = useState(false);
 
   function callbackUrl() {
     const url = new URL("/auth/callback", window.location.origin);
@@ -80,7 +79,6 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
   async function withEmail(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setNoAccount(false);
     setBusy(true);
     const { error } = await createClient().auth.signInWithOtp({
       email,
@@ -92,19 +90,20 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
       },
     });
     setBusy(false);
-    if (!error) return setSent(true);
-    if (mode === "signin" && (error.code === "otp_disabled" || /signups not allowed/i.test(error.message))) {
-      setNoAccount(true);
-    } else {
-      setError(error.message);
-    }
+    // Treat "no account for this email" like a sent link so sign-in doesn't
+    // reveal which emails are registered; the sent screen links to sign-up.
+    const noAccount =
+      mode === "signin" && !!error && (error.code === "otp_disabled" || /signups not allowed/i.test(error.message));
+    if (!error || noAccount) setSent(true);
+    else setError(error.message);
   }
 
   // Keep `next` and whatever email was typed when switching sign in ⇄ sign up.
   const switchParams = new URLSearchParams();
   if (next) switchParams.set("next", next);
   if (email) switchParams.set("email", email);
-  const switchHref = switchParams.size ? `${copy.switchHref}?${switchParams}` : copy.switchHref;
+  const switchQuery = switchParams.toString();
+  const switchHref = switchQuery ? `${copy.switchHref}?${switchQuery}` : copy.switchHref;
   const input =
     "w-full rounded-lg border border-border px-3 py-2.5 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
 
@@ -130,10 +129,19 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
       {sent ? (
         <div className="rounded-lg bg-brand-light p-4 text-center">
           <p className="font-medium">Check your email</p>
-          <p className="mt-1 text-sm text-muted">
-            We sent a link to <strong>{email}</strong>. Open it on this device to{" "}
-            {mode === "signup" ? "finish creating your account" : "sign in"}.
-          </p>
+          {mode === "signup" ? (
+            <p className="mt-1 text-sm text-muted">
+              We sent a link to <strong>{email}</strong>. Open it on this device to finish creating your account.
+            </p>
+          ) : (
+            <p className="mt-1 text-sm text-muted">
+              If there&apos;s an account for <strong>{email}</strong>, we sent it a sign-in link. Open it on this
+              device to sign in. No email?{" "}
+              <Link href={switchHref} className="font-medium text-brand underline">
+                Create an account
+              </Link>
+            </p>
+          )}
         </div>
       ) : (
         <fieldset disabled={!configured} className="flex flex-col gap-3 disabled:opacity-50">
@@ -191,14 +199,6 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
         </fieldset>
       )}
 
-      {noAccount && (
-        <p className="text-sm">
-          There&apos;s no account for this email yet.{" "}
-          <Link href={switchHref} className="font-medium text-brand underline">
-            Create one
-          </Link>
-        </p>
-      )}
       {error && <p className="text-sm text-red-700">{error}</p>}
 
       <p className="text-center text-sm text-muted">

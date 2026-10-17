@@ -2,21 +2,19 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { getPrivate } from "@/lib/api/server";
-import { createClient, getUser } from "@/lib/supabase/server";
+import { getAccessToken, getUser } from "@/lib/supabase/server";
 import type { SavedMatch } from "@/types";
 
 async function Dashboard() {
   const user = await getUser();
   if (!user) redirect("/login?next=/dashboard");
 
-  const {
-    data: { session },
-  } = await (await createClient()).auth.getSession();
+  const token = await getAccessToken();
   let saved: SavedMatch[] = [];
   let savedError = false;
-  if (session) {
+  if (token) {
     try {
-      saved = await getPrivate<SavedMatch[]>("/match/saved", session.access_token);
+      saved = await getPrivate<SavedMatch[]>("/match/saved", token);
     } catch {
       savedError = true;
     }

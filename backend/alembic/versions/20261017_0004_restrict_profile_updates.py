@@ -27,5 +27,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.execute("revoke update (full_name, role) on public.profiles from authenticated")
-    op.execute("grant update on public.profiles to anon, authenticated")
+    # Intentionally a no-op: restoring the table-level grant would let users
+    # set is_premium themselves again. 0001's downgrade drops the table anyway.
+    pass

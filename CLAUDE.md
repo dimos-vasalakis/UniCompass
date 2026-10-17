@@ -12,7 +12,7 @@ npm run dev      # http://localhost:3000
 npm run build
 npm run lint     # eslint
 npm run typecheck
-npm test         # vitest unit tests (src/**/*.test.ts)
+npm test         # vitest: src/**/*.test.ts (node) + src/**/*.test.tsx (jsdom, Testing Library)
 npm run test:e2e # Playwright (e2e/); starts uvicorn + next itself, needs the seeded test DB
 ```
 

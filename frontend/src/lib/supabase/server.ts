@@ -41,3 +41,17 @@ export const getUser = cache(async () => {
   } = await supabase.auth.getUser();
   return user;
 });
+
+/**
+ * The current session's access token for backend calls, or null. Cached per
+ * request like getUser(); call getUser() first, since getSession() alone
+ * doesn't verify the cookie with Supabase Auth.
+ */
+export const getAccessToken = cache(async () => {
+  if (!supabaseConfigured) return null;
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
+});
