@@ -199,7 +199,7 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
         </fieldset>
       )}
 
-      {error && <p className="text-sm text-red-700">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       <p className="text-center text-sm text-muted">
         {copy.switchText}{" "}

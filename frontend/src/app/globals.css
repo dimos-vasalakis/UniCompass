@@ -11,6 +11,21 @@
   --brand-light: #eef5f0;
   --accent: #eebc50;
   --accent-dark: #d9a53a;
+  --danger: #b91c1c;
+  color-scheme: light;
+}
+
+/* Set by the inline script in layout.tsx (saved choice, else the OS setting). */
+:root[data-theme="dark"] {
+  --background: #0f1713;
+  --foreground: #e6efe9;
+  --muted: #9db0a4;
+  --border: #2a3a31;
+  --brand: #3f8c5f;
+  --brand-dark: #357a51;
+  --brand-light: #1a2a21;
+  --danger: #f87171;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -23,6 +38,7 @@
   --color-brand-light: var(--brand-light);
   --color-accent: var(--accent);
   --color-accent-dark: var(--accent-dark);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -31,6 +47,13 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+input,
+select,
+textarea {
+  background: var(--background);
+  color: var(--foreground);
 }
 
 ::selection {

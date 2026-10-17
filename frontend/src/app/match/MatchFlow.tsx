@@ -241,7 +241,7 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
             />
           </div>
 
-          {error && <p className="text-sm text-red-700">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           <NavButtons
             back={() => setStep(1)}
             next={{
@@ -459,7 +459,7 @@ function Results({
           )}
         </div>
       </div>
-      {error && <p className="text-sm text-red-700">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       {results.length === 0 ? (
         <div className="rounded-lg border border-border bg-brand-light p-6">

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { getUser } from "@/lib/supabase/server";
 import { SignOutButton } from "./SignOutButton";
+import { ThemeToggle } from "./ThemeToggle";
 
 async function AccountLinks() {
   const user = await getUser();
@@ -46,6 +47,7 @@ export function SiteHeader() {
         <Suspense fallback={<span aria-hidden className="inline-block h-8 w-44" />}>
           <AccountLinks />
         </Suspense>
+        <ThemeToggle />
       </nav>
     </header>
   );
