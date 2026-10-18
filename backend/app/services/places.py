@@ -157,8 +157,12 @@ async def list_canteens(db: AsyncSession) -> list[dict]:
 def _canteens_near(
     canteens: list[dict], lat: float, lng: float, university_slug: str | None = None
 ) -> list[CanteenOut]:
-    """Nearest first. With a university, only its canteens, else (if it has none) all."""
-    pool = [c for c in canteens if c["university_slug"] == university_slug] or canteens
+    """Nearest first. With a university, only its canteens (none if it has none), else all."""
+    pool = (
+        [c for c in canteens if c["university_slug"] == university_slug]
+        if university_slug
+        else canteens
+    )
     out = []
     for c in sorted(pool, key=lambda c: haversine_km(lat, lng, c["lat"], c["lng"])):
         km = haversine_km(lat, lng, c["lat"], c["lng"])

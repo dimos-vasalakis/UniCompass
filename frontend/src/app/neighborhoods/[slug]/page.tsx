@@ -31,7 +31,7 @@ function PlaceList({ d, title, places, empty }: { d: Dictionary; title: string; 
         <ul className="divide-y divide-border text-sm">
           {places.map((p) => (
             <li key={`${p.lat},${p.lng}`} className="flex justify-between gap-3 py-2">
-              <a href={mapsUrl(p.lat, p.lng, p.name)} target="_blank" rel="noreferrer" className="text-brand hover:underline">
+              <a href={mapsUrl(p.lat, p.lng)} target="_blank" rel="noreferrer" className="text-brand hover:underline">
                 {p.name}
               </a>
               <span className="shrink-0 whitespace-nowrap tabular-nums">{walkLabel(d, p)}</span>
@@ -95,7 +95,7 @@ async function Area({ params }: { params: Promise<{ slug: string }> }) {
               {n.canteens.map((c) => (
                 <li key={c.slug} className="py-2">
                   <div className="flex justify-between gap-3">
-                    <a href={mapsUrl(c.lat, c.lng, areaNames(locale, c)[0])} target="_blank" rel="noreferrer" className="text-brand hover:underline">
+                    <a href={mapsUrl(c.lat, c.lng)} target="_blank" rel="noreferrer" className="text-brand hover:underline">
                       <span className="font-medium">{c.university}</span> · {areaNames(locale, c)[0]}
                     </a>
                     <span className="shrink-0 whitespace-nowrap tabular-nums">{canteenLabel(d, c)}</span>

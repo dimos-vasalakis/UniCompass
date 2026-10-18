@@ -135,6 +135,17 @@ def test_match_results_include_the_students_own_canteen(client: TestClient) -> N
         assert isinstance(area["daily_life"]["nearby_loaded"], bool)
 
 
+def test_university_without_a_canteen_gets_none_not_anothers(
+    client: TestClient,
+) -> None:
+    dept = department_id(client, "aueb", "aueb-patision", "Informatics")
+    res = client.post(
+        "/api/v1/match", json={"department_id": dept, "weights": {"commute": 5}}
+    )
+    for area in res.json()["results"]:
+        assert area["daily_life"]["canteen"] is None
+
+
 def test_nearby_places_are_never_served_stale(client: TestClient) -> None:
     """compute_nearby.py writes straight to Postgres, so reads must not be cached."""
     import psycopg

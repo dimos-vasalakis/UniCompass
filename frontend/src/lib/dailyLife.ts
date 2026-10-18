@@ -11,6 +11,7 @@ export function canteenLabel(d: Dictionary, c: Canteen): string {
   return fmt(c.mode === "walk" ? d.daily.walkEstimate : d.daily.transit, { n: c.minutes });
 }
 
-export function mapsUrl(lat: number, lng: number, name: string): string {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}%20${lat},${lng}`;
+// Coordinates only: adding the name makes Google search for every branch of that chain in the country.
+export function mapsUrl(lat: number, lng: number): string {
+  return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 }

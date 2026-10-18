@@ -31,7 +31,7 @@ test("NTUA student who cares about commute and rent gets eastern areas", async (
   await expect(cards(page).first().getByText(/✓|Shorter commute/).first()).toBeVisible();
 
   // Map: 3 numbered pins + campus pin (nearby supermarket/gym/canteen pins come on top), with tiles loaded.
-  await expect(page.locator(".leaflet-marker-icon").filter({ hasText: /^[123🎓]$/ })).toHaveCount(4);
+  await expect(page.locator(".leaflet-marker-icon").filter({ hasText: /^[123🎓]$/u })).toHaveCount(4);
   await expect(page.locator(".leaflet-tile-loaded").first()).toBeVisible();
 });
 
