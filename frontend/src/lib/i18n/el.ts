@@ -164,6 +164,8 @@ export const el: Dictionary = {
     legendHub: " · ⌂ {hub}",
     legendNearby: " · 🛒 κοντινότερο σούπερ μάρκετ · 🏋 κοντινότερο γυμναστήριο · 🍽 φοιτητική λέσχη",
     legendTail: ". Πάτα έναν δείκτη για να δεις το όνομά του.",
+    zoomIn: "Μεγέθυνση",
+    zoomOut: "Σμίκρυνση",
     yourCampus: "Η πανεπιστημιούπολή σου: {name}",
     matchPercent: "{n}% ταίριασμα",
     studioRent: "Ενοίκιο γκαρσονιέρας",

@@ -2,7 +2,8 @@
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { MapContainer, Marker, TileLayer, Tooltip } from "react-leaflet";
+import { useEffect, useRef } from "react";
+import { useDict } from "@/lib/i18n/client";
 
 export type MapPoint = {
   key: string;
@@ -16,8 +17,7 @@ export type MapPoint = {
 
 // Numbered pins instead of permanent text labels: nearby areas (e.g. Zografou
 // next to its campus) would otherwise hide each other's labels.
-// Icons are cached: a new L.divIcon each render makes react-leaflet rebuild the
-// marker DOM, which flickers and closes any open tooltip.
+// Icons are cached: one per kind/badge, shared by every marker and rebuild.
 const iconCache = new Map<string, L.DivIcon>();
 
 function pin(p: MapPoint): L.DivIcon {
@@ -43,33 +43,45 @@ function pin(p: MapPoint): L.DivIcon {
   return icon;
 }
 
+// Leaflet treats string tooltip content as HTML; labels include third-party place names.
+function tooltipText(label: string): HTMLElement {
+  const span = document.createElement("span");
+  span.textContent = label;
+  return span;
+}
+
+const isPlace = (p: MapPoint) => p.kind === "supermarket" || p.kind === "gym" || p.kind === "canteen";
+
+// The map is built imperatively in one effect rather than with react-leaflet's
+// <MapContainer>: React re-runs effects when a hidden tree is shown again, and
+// MapContainer has already removed its map by then, so the tile layer was added
+// to a dead map ("Cannot read properties of undefined (reading 'appendChild')").
 export default function MatchMap({ points }: { points: MapPoint[] }) {
-  // Fit the map to the areas, campus and hub only: a far-away shop shouldn't zoom it out.
-  const isPlace = (p: MapPoint) => p.kind === "supermarket" || p.kind === "gym" || p.kind === "canteen";
-  const bounds = points.filter((p) => !isPlace(p)).map((p) => [p.lat, p.lng] as [number, number]);
-  return (
-    <MapContainer
-      bounds={bounds}
-      boundsOptions={{ padding: [40, 40], maxZoom: 14 }}
-      scrollWheelZoom={false}
-      className="h-full min-h-72 w-full rounded-lg"
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      {points.map((p) => (
-        <Marker
-          key={p.key}
-          position={[p.lat, p.lng]}
-          icon={pin(p)}
-          zIndexOffset={p.kind === "area" ? 1000 : isPlace(p) ? -500 : 0}
-        >
-          <Tooltip direction="top" offset={[0, -14]}>
-            {p.label}
-          </Tooltip>
-        </Marker>
-      ))}
-    </MapContainer>
-  );
+  const ref = useRef<HTMLDivElement>(null);
+  const { zoomIn, zoomOut } = useDict().match;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const map = L.map(el, { scrollWheelZoom: false, zoomControl: false });
+    L.control.zoom({ zoomInTitle: zoomIn, zoomOutTitle: zoomOut }).addTo(map);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+    for (const p of points) {
+      L.marker([p.lat, p.lng], {
+        icon: pin(p),
+        zIndexOffset: p.kind === "area" ? 1000 : isPlace(p) ? -500 : 0,
+      })
+        .bindTooltip(tooltipText(p.label), { direction: "top", offset: [0, -14] })
+        .addTo(map);
+    }
+    // Fit the map to the areas, campus and hub only: a far-away shop shouldn't zoom it out.
+    const bounds = points.filter((p) => !isPlace(p)).map((p) => [p.lat, p.lng] as [number, number]);
+    if (bounds.length) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+    else map.setView([37.98, 23.73], 11);
+    return () => {
+      map.remove();
+    };
+  }, [points, zoomIn, zoomOut]);
+  return <div ref={ref} className="h-full min-h-72 w-full rounded-lg" />;
 }

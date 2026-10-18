@@ -164,6 +164,8 @@ export const en = {
     legendHub: " · ⌂ {hub}",
     legendNearby: " · 🛒 nearest supermarket · 🏋 nearest gym · 🍽 student restaurant",
     legendTail: ". Tap a pin for its name.",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
     yourCampus: "Your campus: {name}",
     matchPercent: "{n}% match",
     studioRent: "Studio rent",
