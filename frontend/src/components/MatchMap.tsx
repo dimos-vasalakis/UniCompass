@@ -9,7 +9,7 @@ export type MapPoint = {
   label: string;
   lat: number;
   lng: number;
-  kind: "area" | "campus" | "hub";
+  kind: "area" | "campus" | "hub" | "supermarket" | "gym" | "canteen";
   /** Shown inside the pin: the result rank for areas. */
   badge?: string;
 };
@@ -28,8 +28,11 @@ function pin(p: MapPoint): L.DivIcon {
     area: "background:#3a7851;color:#fff;border:2px solid #fff;width:28px;height:28px;font-size:14px",
     campus: "background:#eebc50;color:#1c2b22;border:2px solid #fff;width:30px;height:30px;font-size:15px",
     hub: "background:#fff;color:#1c2b22;border:2px solid #5b6b61;width:24px;height:24px;font-size:12px",
+    supermarket: "background:#fff;color:#1c2b22;border:2px solid #3a7851;width:22px;height:22px;font-size:12px",
+    gym: "background:#fff;color:#1c2b22;border:2px solid #3a7851;width:22px;height:22px;font-size:12px",
+    canteen: "background:#fff;color:#1c2b22;border:2px solid #eebc50;width:22px;height:22px;font-size:12px",
   }[p.kind];
-  const size = { area: 28, campus: 30, hub: 24 }[p.kind];
+  const size = { area: 28, campus: 30, hub: 24, supermarket: 22, gym: 22, canteen: 22 }[p.kind];
   const icon = L.divIcon({
     className: "",
     html: `<div style="${styles};border-radius:9999px;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.35)">${p.badge ?? ""}</div>`,
@@ -41,7 +44,9 @@ function pin(p: MapPoint): L.DivIcon {
 }
 
 export default function MatchMap({ points }: { points: MapPoint[] }) {
-  const bounds = points.map((p) => [p.lat, p.lng] as [number, number]);
+  // Fit the map to the areas, campus and hub only: a far-away shop shouldn't zoom it out.
+  const isPlace = (p: MapPoint) => p.kind === "supermarket" || p.kind === "gym" || p.kind === "canteen";
+  const bounds = points.filter((p) => !isPlace(p)).map((p) => [p.lat, p.lng] as [number, number]);
   return (
     <MapContainer
       bounds={bounds}
@@ -58,7 +63,7 @@ export default function MatchMap({ points }: { points: MapPoint[] }) {
           key={p.key}
           position={[p.lat, p.lng]}
           icon={pin(p)}
-          zIndexOffset={p.kind === "area" ? 1000 : 0}
+          zIndexOffset={p.kind === "area" ? 1000 : isPlace(p) ? -500 : 0}
         >
           <Tooltip direction="top" offset={[0, -14]}>
             {p.label}

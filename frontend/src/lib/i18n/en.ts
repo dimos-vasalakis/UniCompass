@@ -162,6 +162,7 @@ export const en = {
     noFitHint: "Try raising your maximum rent or commute.",
     legend: "1–3: your areas · 🎓 your campus",
     legendHub: " · ⌂ {hub}",
+    legendNearby: " · 🛒 nearest supermarket · 🏋 nearest gym · 🍽 student restaurant",
     legendTail: ". Tap a pin for its name.",
     yourCampus: "Your campus: {name}",
     matchPercent: "{n}% match",

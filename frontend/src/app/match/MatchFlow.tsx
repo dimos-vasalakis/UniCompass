@@ -460,6 +460,26 @@ function Results({
       p.push({ key: "campus", label: fmt(d.match.yourCampus, { name: campusPoint.name }), ...campusPoint, kind: "campus", badge: "🎓" });
     }
     if (hub) p.push({ key: "hub", label: hub.name, lat: hub.lat, lng: hub.lng, kind: "hub", badge: "⌂" });
+    // Each area's nearest supermarket/gym/canteen. Areas can share one, with
+    // different travel times, so a shared pin lists the time for each area.
+    const places = new Map<string, { kind: "supermarket" | "gym" | "canteen"; name: string; lat: number; lng: number; times: string[] }>();
+    const addPlace = (kind: "supermarket" | "gym" | "canteen", name: string, lat: number, lng: number, rank: number, time: string) => {
+      const key = `${kind}:${lat},${lng}`;
+      const entry = places.get(key) ?? { kind, name, lat, lng, times: [] };
+      entry.times.push(`${rank}: ${time}`);
+      places.set(key, entry);
+    };
+    results.forEach((r, i) => {
+      const dl = r.daily_life;
+      if (!dl) return;
+      if (dl.supermarket) addPlace("supermarket", dl.supermarket.name, dl.supermarket.lat, dl.supermarket.lng, i + 1, walkLabel(d, dl.supermarket));
+      if (dl.gym) addPlace("gym", dl.gym.name, dl.gym.lat, dl.gym.lng, i + 1, walkLabel(d, dl.gym));
+      if (dl.canteen) addPlace("canteen", areaNames(locale, dl.canteen)[0], dl.canteen.lat, dl.canteen.lng, i + 1, canteenLabel(d, dl.canteen));
+    });
+    for (const [key, { kind, name, lat, lng, times }] of places) {
+      const badge = { supermarket: "🛒", gym: "🏋️", canteen: "🍽️" }[kind];
+      p.push({ key, label: `${name} · ${times.join(" · ")}`, lat, lng, kind, badge });
+    }
     return p;
   }, [results, campusPoint, hub, d, locale]);
 
@@ -514,6 +534,7 @@ function Results({
             <p className="mt-2 text-xs text-muted">
               {d.match.legend}
               {hub ? fmt(d.match.legendHub, { hub: hub.name }) : ""}
+              {points.some((p) => p.kind === "supermarket" || p.kind === "gym" || p.kind === "canteen") && d.match.legendNearby}
               {d.match.legendTail}
             </p>
           </div>
