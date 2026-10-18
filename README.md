@@ -1,6 +1,6 @@
 # UniCompass
 
-Helps students who passed the Panhellenic exams settle into their new university city. A student picks their department and priorities (rent, commute, nightlife, safety…) and gets the three Athens neighborhoods that fit them best, with guides for each area.
+Helps students who passed the Panhellenic exams settle into their new university city. A student picks their department and priorities (rent, commute, nightlife, safety…) and gets the three Athens neighborhoods that fit them best, with guides for each area, plus the nearest supermarket, gym and student restaurant (φοιτητική λέσχη) of their own university. The site is available in English and Greek.
 
 | Layer     | Tech                         | Hosting  |
 | --------- | ---------------------------- | -------- |
@@ -10,6 +10,7 @@ Helps students who passed the Panhellenic exams settle into their new university
 | Payments  | Stripe (one-time Checkout)   |          |
 | Email     | Resend                       |          |
 | Cache     | Upstash Redis                |          |
+| Errors    | Sentry (optional)            |          |
 
 ## Quick start
 
@@ -46,6 +47,8 @@ Everything defaults to empty, so both apps boot without secrets. Public pages wo
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY`      | Supabase → Settings → API                                             |
 | `NEXT_PUBLIC_API_URL`                | Backend origin, no `/api/v1` and no trailing slash (e.g. `https://<service>.onrender.com`) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe → Developers → API keys                                        |
+| `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_DSN` | Sentry (optional; errors are not reported when empty)               |
+| `SENTRY_AUTH_TOKEN`                  | Build-time only, for source map upload. Set it in Vercel, never commit |
 
 `NEXT_PUBLIC_*` values are baked in at build time, so **redeploy on Vercel after changing them**.
 
@@ -54,7 +57,7 @@ Everything defaults to empty, so both apps boot without secrets. Public pages wo
 | Variable                                 | Value                                                                       |
 | ---------------------------------------- | --------------------------------------------------------------------------- |
 | `ENVIRONMENT`                            | `development` locally, `production` on Render (turns off `/docs`)           |
-| `FRONTEND_URL`, `CORS_ORIGINS`           | Your site's URL, e.g. `["https://your-app.vercel.app"]`                     |
+| `FRONTEND_URL`, `CORS_ORIGINS`           | Your site's URL, e.g. `FRONTEND_URL=https://www.example.com`, `CORS_ORIGINS=["https://www.example.com","https://example.com"]`. List every host the site is served from: a missing one makes the browser block API calls ("Something went wrong finding areas") |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API                                                |
 | `SUPABASE_JWT_SECRET`                    | Leave empty (tokens are checked with JWKS); only legacy HS256 projects need it |
 | `DATABASE_URL`                           | Supabase → Connect → **transaction pooler** (`:6543`), used by the app       |
@@ -62,6 +65,7 @@ Everything defaults to empty, so both apps boot without secrets. Public pages wo
 | `STRIPE_*`                               | Secret key, webhook signing secret, price ID of the premium product          |
 | `RESEND_API_KEY`, `EMAIL_FROM`           | Resend                                                                       |
 | `UPSTASH_REDIS_REST_URL` / `_TOKEN`      | Upstash (optional)                                                           |
+| `SENTRY_DSN`                             | Sentry (optional)                                                            |
 | `GOOGLE_MAPS_API_KEY`                    | Only for `scripts/compute_travel_times.py`                                   |
 
 Database URL gotchas:
@@ -92,7 +96,7 @@ Database URL gotchas:
 - Start command `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
 - Health check `/api/v1/health`.
 
-Fill in the environment variables above. Run `alembic upgrade head` and `python -m scripts.seed` against the production database from your machine. The free plan sleeps after about 15 minutes idle, so the first request after that takes around 50 seconds.
+Fill in the environment variables above. Run `alembic upgrade head`, `python -m scripts.seed` and `python -m scripts.compute_nearby` against the production database from your machine. Do this on every deploy that adds a migration: the seed fills the Greek (`*_el`) columns, and a database that is migrated but not re-seeded silently shows English. The free plan sleeps after about 15 minutes idle, so the first request after that takes around 50 seconds.
 
 **Frontend (Vercel).** Import the repo with root directory `frontend` and set the environment variables.
 
@@ -122,7 +126,7 @@ ruff check . && ruff format .
 pytest                      # unit tests; DB tests skip without a test database
 ```
 
-DB tests (API, RLS/grants, seed, Stripe webhook) need a migrated, seeded Postgres. A throwaway one in Docker:
+DB tests (API, RLS/grants, seed, Stripe webhook) need a migrated, seeded Postgres. A throwaway one in Docker (or any local Postgres 16 on port 55432: run `tests/supabase_stub.sql` against it first):
 
 ```bash
 docker run -d --name unicompass-pg-test -e POSTGRES_PASSWORD=test -p 55432:5432 \
@@ -150,11 +154,19 @@ Put component tests next to the component (`Something.test.tsx`). Playwright wri
 `backend/data/athens.json` is the source of truth for areas, universities, campuses, departments and transit hubs. After editing it:
 
 ```bash
-python -m scripts.seed                   # upsert by slug (safe to re-run)
+python -m scripts.seed                   # upsert by slug (safe to re-run); also clears the cache
 python -m scripts.compute_travel_times   # real transit times from Google Routes
+python -m scripts.compute_nearby         # nearest supermarkets/gyms from OpenStreetMap (no key)
+python -m scripts.clear_cache            # drop cached reference data (Upstash) on its own
 ```
 
-Until the Google script runs, travel times are distance-based estimates, and the UI marks them with `~`.
+Until the Google script runs, travel times are distance-based estimates, and the UI marks them with `~`. Supermarkets and gyms stay empty until `compute_nearby` runs; re-run it now and then, as shops open and close. Student restaurants are curated in `athens.json` (`student_canteens`). A match shows only the chosen university's own restaurant, and none if that university has none.
+
+**Greek.** `backend/data/athens.el.json` holds the Greek names, departments, hubs, area descriptions and pros/cons, in the same order as the English. `seed` loads them into `*_el` columns and English is the fallback where one is missing. Adding a department, pro or con in `athens.json` fails `test_data.py` until its Greek is added.
+
+## Languages
+
+The language is a `locale` cookie (English by default), switched by the header toggle; URLs don't change. UI text lives in `frontend/src/lib/i18n/en.ts` (source of truth) and `el.ts`, which must have the same keys and `{placeholders}` (checked by `i18n.test.ts`). Data text comes from the API with `?lang=el`. The cookie is per host, so `example.com` and `www.example.com` don't share a language or a login: pick one canonical host (Vercel redirects the other) and use it in the Supabase Site URL.
 
 ## Database migrations
 
@@ -171,12 +183,14 @@ Autogenerate only covers tables and columns. Write RLS policies, grants and trig
 1. **Sign-in.** Users sign in on the frontend through Supabase Auth: Google, GitHub or an email magic link. `/auth/callback` swaps the code for a session cookie, and `src/proxy.ts` refreshes it and protects `/dashboard`.
 2. **API calls.** The frontend sends the Supabase access token to the backend as `Authorization: Bearer …`. The backend verifies it with Supabase's JWKS (or the legacy HS256 secret).
 3. **Database access.** The backend talks to Postgres directly with async SQLAlchemy through the pooler. That connection bypasses RLS, so every query filters by the user's id itself. Users can edit only `full_name`/`role` of their own profile through Supabase directly; billing fields like `is_premium` are written only by the backend's Stripe webhook.
-4. **Caching.** Reference data (areas, universities, hubs) is cached in Upstash for 6 hours, and profiles for 5 minutes.
+4. **Caching.** Reference data (areas, universities, hubs, canteens) is cached in Upstash for 6 hours, keyed by language, and profiles for 5 minutes. Nearby supermarkets and gyms are never cached. Reseeding clears the cache.
+5. **Map.** `src/components/MatchMap.tsx` builds the Leaflet map imperatively in one effect (react-leaflet's `MapContainer` crashed when React re-ran effects). Pins: numbered areas, campus, hub, and nearby supermarket/gym/canteen; the view fits only the areas, campus and hub.
 
 ```
 frontend/                 Next.js app
   src/app/                routes: /, /match, /neighborhoods, /login, /signup, /auth/callback, /dashboard, /pricing
-  src/components/         shared UI (AuthForm, maps, score bars, …)
+  src/components/         shared UI (AuthForm, MatchMap, score bars, language toggle, …)
+  src/lib/i18n/           English/Greek dictionaries and locale helpers
   src/lib/supabase/       browser, server and proxy Supabase clients
   src/lib/api/            fetch helpers for the backend
   src/proxy.ts            session refresh + protected routes
@@ -187,7 +201,7 @@ backend/                  FastAPI app
   app/services/           matching (pure), places, billing, cache, email
   app/models/, schemas/   SQLAlchemy models, Pydantic API models
   alembic/                migrations
-  data/athens.json        area/university/hub data
-  scripts/                seed, compute_travel_times
+  data/athens.json        area/university/hub/canteen data (athens.el.json: Greek text)
+  scripts/                seed, compute_travel_times, compute_nearby, clear_cache
 render.yaml               Render blueprint
 ```
