@@ -2,10 +2,12 @@ import uuid
 from typing import Any
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     Float,
     ForeignKey,
     Index,
+    Integer,
     SmallInteger,
     Text,
     UniqueConstraint,
@@ -162,3 +164,43 @@ class TravelTime(Base):
     route_summary: Mapped[str | None] = mapped_column(Text)
     # "estimate" = straight-line distance heuristic (seed.py); "google" = Routes API.
     source: Mapped[str] = mapped_column(Text, server_default="estimate")
+
+
+class StudentCanteen(Base):
+    """A university student restaurant (φοιτητική λέσχη). Curated in data/<city>.json."""
+
+    __tablename__ = "student_canteens"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    university_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("universities.id", ondelete="CASCADE")
+    )
+    slug: Mapped[str] = mapped_column(Text, unique=True)
+    name: Mapped[str] = mapped_column(Text)
+    name_el: Mapped[str] = mapped_column(Text)
+    address: Mapped[str | None] = mapped_column(Text)
+    lat: Mapped[float] = mapped_column(Float)
+    lng: Mapped[float] = mapped_column(Float)
+    # True when lat/lng is only the campus position, not the building itself.
+    approximate: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
+
+
+class NearbyPlace(Base):
+    """A supermarket or gym close to a neighborhood (scripts/compute_nearby.py, OSM)."""
+
+    __tablename__ = "nearby_places"
+    __table_args__ = (
+        CheckConstraint("kind in ('supermarket', 'gym')", name="kind"),
+        UniqueConstraint("neighborhood_id", "osm_id"),
+    )
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    neighborhood_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("neighborhoods.id", ondelete="CASCADE")
+    )
+    kind: Mapped[str] = mapped_column(Text)
+    osm_id: Mapped[str] = mapped_column(Text)
+    name: Mapped[str] = mapped_column(Text)
+    lat: Mapped[float] = mapped_column(Float)
+    lng: Mapped[float] = mapped_column(Float)
+    distance_m: Mapped[int] = mapped_column(Integer)

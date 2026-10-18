@@ -101,6 +101,7 @@ def test_users_cannot_edit_someone_elses_profile(make_user) -> None:
         "neighborhoods",
         "transit_hubs",
         "travel_times",
+        "student_canteens",
     ],
 )
 def test_reference_data_is_public_read_only(table) -> None:
@@ -111,6 +112,23 @@ def test_reference_data_is_public_read_only(table) -> None:
         assert cur.rowcount == 0  # RLS: no update policy → no visible rows
         cur.execute(f"delete from public.{table}")
         assert cur.rowcount == 0
+
+
+def test_nearby_places_are_public_read_only() -> None:
+    # Filled by scripts/compute_nearby.py (OSM), so it may be empty in CI.
+    with as_role("anon") as cur:
+        cur.execute("select count(*) from public.nearby_places")
+        cur.execute("delete from public.nearby_places")
+        assert cur.rowcount == 0
+    with (
+        as_role("authenticated", uuid.uuid4()) as cur,
+        pytest.raises(psycopg.errors.InsufficientPrivilege),
+    ):
+        cur.execute(
+            "insert into public.nearby_places "
+            "(neighborhood_id, kind, osm_id, name, lat, lng, distance_m) "
+            "values (gen_random_uuid(), 'gym', 'node/1', 'x', 0, 0, 0)"
+        )
 
 
 def test_reference_data_cannot_be_inserted() -> None:

@@ -2,19 +2,24 @@
 
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import (
     Campus,
     Department,
+    NearbyPlace,
     Neighborhood,
+    StudentCanteen,
     TransitHub,
     TravelTime,
     University,
 )
+from app.schemas.daily_life import CanteenOut, DailyLife, NearbyPlaceOut
+from app.schemas.match import MatchArea
 from app.schemas.places import (
     HubOut,
+    NeighborhoodBase,
     NeighborhoodDetail,
     NeighborhoodSummary,
     Scores,
@@ -22,11 +27,17 @@ from app.schemas.places import (
     UniversityOut,
 )
 from app.services.cache import cache_get, cache_set
+from app.services.geo import (
+    WALKABLE_KM,
+    estimate_transit_minutes,
+    haversine_km,
+    walk_minutes,
+)
 from app.services.matching import SCORE_FACTORS, AreaInput
 
 # Bump when the shape of cached values changes. Reference data only changes
 # when scripts/seed.py or compute_travel_times.py runs; TTL bounds staleness.
-PREFIX = "places:v1"
+PREFIX = "places:v2"
 TTL = 6 * 3600
 
 
@@ -97,6 +108,58 @@ async def list_hubs(db: AsyncSession) -> list[HubOut]:
     return out
 
 
+async def list_canteens(db: AsyncSession) -> list[dict]:
+    """Every student restaurant, as plain dicts (cached)."""
+    key = f"{PREFIX}:canteens"
+    if cached := await cache_get(key):
+        return cached
+
+    rows = (
+        await db.execute(
+            select(StudentCanteen, University).join(
+                University, StudentCanteen.university_id == University.id
+            )
+        )
+    ).all()
+    out = [
+        {
+            "slug": c.slug,
+            "name": c.name,
+            "name_el": c.name_el,
+            "university": u.short_name,
+            "university_slug": u.slug,
+            "address": c.address,
+            "lat": c.lat,
+            "lng": c.lng,
+            "approximate": c.approximate,
+        }
+        for c, u in rows
+    ]
+    await cache_set(key, out, TTL)
+    return out
+
+
+def _canteens_near(
+    canteens: list[dict], lat: float, lng: float, university_slug: str | None = None
+) -> list[CanteenOut]:
+    """Nearest first. With a university, only its canteens, else (if it has none) all."""
+    pool = [c for c in canteens if c["university_slug"] == university_slug] or canteens
+    out = []
+    for c in sorted(pool, key=lambda c: haversine_km(lat, lng, c["lat"], c["lng"])):
+        km = haversine_km(lat, lng, c["lat"], c["lng"])
+        walk = km <= WALKABLE_KM
+        out.append(
+            CanteenOut(
+                **{k: v for k, v in c.items() if k != "university_slug"},
+                mode="walk" if walk else "transit",
+                minutes=walk_minutes(km * 1000)
+                if walk
+                else estimate_transit_minutes(lat, lng, c["lat"], c["lng"]),
+            )
+        )
+    return out
+
+
 async def list_neighborhoods(db: AsyncSession) -> list[NeighborhoodSummary]:
     key = f"{PREFIX}:neighborhoods"
     if cached := await cache_get(key):
@@ -108,10 +171,39 @@ async def list_neighborhoods(db: AsyncSession) -> list[NeighborhoodSummary]:
     return out
 
 
-async def get_neighborhood(db: AsyncSession, slug: str) -> NeighborhoodDetail | None:
+async def _nearby_places(
+    db: AsyncSession, slugs: list[str]
+) -> dict[str, list[NearbyPlace]]:
+    """Closest first, per neighborhood slug. Never cached: compute_nearby.py
+    writes these straight to Postgres and can't invalidate Upstash."""
+    rows = (
+        await db.execute(
+            select(Neighborhood.slug, NearbyPlace)
+            .join(NearbyPlace, NearbyPlace.neighborhood_id == Neighborhood.id)
+            .where(Neighborhood.slug.in_(slugs))
+            .order_by(NearbyPlace.distance_m)
+        )
+    ).all()
+    out: dict[str, list[NearbyPlace]] = {slug: [] for slug in slugs}
+    for slug, place in rows:
+        out[slug].append(place)
+    return out
+
+
+async def _nearby_loaded(db: AsyncSession) -> bool:
+    return await db.scalar(select(exists().where(NearbyPlace.id.is_not(None)))) or False
+
+
+def _place_out(p: NearbyPlace) -> NearbyPlaceOut:
+    return NearbyPlaceOut(
+        name=p.name, lat=p.lat, lng=p.lng, walk_minutes=walk_minutes(p.distance_m)
+    )
+
+
+async def _neighborhood_base(db: AsyncSession, slug: str) -> NeighborhoodBase | None:
     key = f"{PREFIX}:neighborhood:{slug}"
     if cached := await cache_get(key):
-        return NeighborhoodDetail(**cached)
+        return NeighborhoodBase(**cached)
 
     n = await db.scalar(select(Neighborhood).where(Neighborhood.slug == slug))
     if n is None:
@@ -157,7 +249,7 @@ async def get_neighborhood(db: AsyncSession, slug: str) -> NeighborhoodDetail | 
         for t, h in hub_rows
     ]
 
-    out = NeighborhoodDetail(
+    out = NeighborhoodBase(
         **_summary(n).model_dump(),
         description=n.description,
         pros=n.pros,
@@ -167,6 +259,43 @@ async def get_neighborhood(db: AsyncSession, slug: str) -> NeighborhoodDetail | 
     )
     await cache_set(key, out.model_dump(mode="json"), TTL)
     return out
+
+
+async def get_neighborhood(db: AsyncSession, slug: str) -> NeighborhoodDetail | None:
+    base = await _neighborhood_base(db, slug)
+    if base is None:
+        return None
+
+    nearby = (await _nearby_places(db, [slug]))[slug]
+    return NeighborhoodDetail(
+        **base.model_dump(),
+        nearby_loaded=await _nearby_loaded(db),
+        supermarkets=[_place_out(p) for p in nearby if p.kind == "supermarket"],
+        gyms=[_place_out(p) for p in nearby if p.kind == "gym"],
+        canteens=_canteens_near(await list_canteens(db), base.lat, base.lng)[:3],
+    )
+
+
+async def attach_daily_life(
+    db: AsyncSession, areas: list[MatchArea], university_slug: str
+) -> None:
+    """Fill `daily_life` on match results; the canteen is the student's own university's."""
+    if not areas:
+        return
+    nearby = await _nearby_places(db, [a.slug for a in areas])
+    loaded = await _nearby_loaded(db)
+    canteens = await list_canteens(db)
+    for area in areas:
+        mine = nearby[area.slug]
+        canteen = _canteens_near(canteens, area.lat, area.lng, university_slug)
+        area.daily_life = DailyLife(
+            nearby_loaded=loaded,
+            supermarket=next(
+                (_place_out(p) for p in mine if p.kind == "supermarket"), None
+            ),
+            gym=next((_place_out(p) for p in mine if p.kind == "gym"), None),
+            canteen=canteen[0] if canteen else None,
+        )
 
 
 async def get_department(

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import AreaMap, { type MapPoint } from "@/components/Map";
 import { ProsCons } from "@/components/ProsCons";
 import { ApiError, apiFetch } from "@/lib/api/client";
+import { canteenLabel, walkLabel } from "@/lib/dailyLife";
 import { FACTOR_BY_KEY, FACTORS, HUB_KIND_LABELS } from "@/lib/factors";
 import type { Factor, Hub, MatchArea, MatchRequest, MatchResponse, University } from "@/types";
 
@@ -521,6 +522,27 @@ function ResultCard({ area, rank, hub }: { area: MatchArea; rank: number; hub: H
           <Stat label={`To ${hub.name}`} value={`${area.home_estimated ? "~" : ""}${area.home_minutes} min`} />
         )}
       </dl>
+
+      {area.daily_life && (
+        <dl className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+          {area.daily_life.nearby_loaded && (
+            <>
+              <Stat
+                label="Nearest supermarket"
+                value={area.daily_life.supermarket ? walkLabel(area.daily_life.supermarket) : "None close by"}
+              />
+              <Stat
+                label="Nearest gym"
+                value={area.daily_life.gym ? walkLabel(area.daily_life.gym) : "None close by"}
+              />
+            </>
+          )}
+          <Stat
+            label="Student restaurant (λέσχη)"
+            value={area.daily_life.canteen ? canteenLabel(area.daily_life.canteen) : "—"}
+          />
+        </dl>
+      )}
 
       <div className="mt-4">
         <ProsCons pros={area.pros} cons={area.cons} limit={3} />

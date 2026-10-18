@@ -5,8 +5,9 @@ import { ProsCons } from "@/components/ProsCons";
 import { ScoreBar } from "@/components/ScoreBar";
 import { ApiUnavailable } from "@/components/ApiUnavailable";
 import { tryGetPublic } from "@/lib/api/server";
+import { canteenLabel, mapsUrl, walkLabel } from "@/lib/dailyLife";
 import { HUB_KIND_LABELS, SCORE_LABELS, ZONES } from "@/lib/factors";
-import type { NeighborhoodDetail, ScoreKey, TravelTime } from "@/types";
+import type { NearbyPlace, NeighborhoodDetail, ScoreKey, TravelTime } from "@/types";
 
 function Minutes({ t }: { t: TravelTime }) {
   return (
@@ -14,6 +15,28 @@ function Minutes({ t }: { t: TravelTime }) {
       {t.estimated ? "~" : ""}
       {t.minutes} min
     </span>
+  );
+}
+
+function PlaceList({ title, places, empty }: { title: string; places: NearbyPlace[]; empty: string }) {
+  return (
+    <div>
+      <h3 className="mb-2 font-semibold">{title}</h3>
+      {places.length === 0 ? (
+        <p className="text-sm text-muted">{empty}</p>
+      ) : (
+        <ul className="divide-y divide-border text-sm">
+          {places.map((p) => (
+            <li key={`${p.lat},${p.lng}`} className="flex justify-between gap-3 py-2">
+              <a href={mapsUrl(p.lat, p.lng, p.name)} target="_blank" rel="noreferrer" className="text-brand hover:underline">
+                {p.name}
+              </a>
+              <span className="shrink-0 whitespace-nowrap tabular-nums">{walkLabel(p)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -50,6 +73,42 @@ async function Area({ params }: { params: Promise<{ slug: string }> }) {
         {(Object.keys(SCORE_LABELS) as ScoreKey[]).map((k) => (
           <ScoreBar key={k} label={SCORE_LABELS[k]} value={n.scores[k]} />
         ))}
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-xl font-semibold">Daily life nearby</h2>
+        <div className={`grid gap-8 ${n.nearby_loaded ? "md:grid-cols-3" : ""}`}>
+          {n.nearby_loaded && (
+            <>
+              <PlaceList title="Supermarkets" places={n.supermarkets} empty="None within a 1.5 km radius." />
+              <PlaceList title="Gyms" places={n.gyms} empty="None within a 2 km radius." />
+            </>
+          )}
+          <div>
+            <h3 className="mb-2 font-semibold">Student restaurants (φοιτητική λέσχη)</h3>
+            <ul className="divide-y divide-border text-sm">
+              {n.canteens.map((c) => (
+                <li key={c.slug} className="py-2">
+                  <div className="flex justify-between gap-3">
+                    <a href={mapsUrl(c.lat, c.lng, c.name_el)} target="_blank" rel="noreferrer" className="text-brand hover:underline">
+                      <span className="font-medium">{c.university}</span> · {c.name_el}
+                    </a>
+                    <span className="shrink-0 whitespace-nowrap tabular-nums">{canteenLabel(c)}</span>
+                  </div>
+                  {(c.address || c.approximate) && (
+                    <p className="text-xs text-muted">
+                      {c.address ?? "Inside the campus"}
+                      {c.approximate ? " · map pin is approximate" : ""}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <p className="mt-3 text-sm text-muted">
+          {n.nearby_loaded && "Supermarkets and gyms come from OpenStreetMap. "}Walking times are estimates.
+        </p>
       </section>
 
       <section className="grid gap-8 md:grid-cols-2">

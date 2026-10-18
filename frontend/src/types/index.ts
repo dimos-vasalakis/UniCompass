@@ -61,12 +61,38 @@ export type TravelTime = {
   estimated: boolean;
 };
 
+export type NearbyPlace = { name: string; lat: number; lng: number; walk_minutes: number };
+
+export type Canteen = {
+  slug: string;
+  name: string;
+  name_el: string;
+  university: string;
+  address: string | null;
+  lat: number;
+  lng: number;
+  approximate: boolean;
+  mode: "walk" | "transit";
+  minutes: number;
+};
+
+export type DailyLife = {
+  nearby_loaded: boolean;
+  supermarket: NearbyPlace | null;
+  gym: NearbyPlace | null;
+  canteen: Canteen | null;
+};
+
 export type NeighborhoodDetail = NeighborhoodSummary & {
   description: string;
   pros: Point[];
   cons: Point[];
   sources: string[];
   travel_times: TravelTime[];
+  nearby_loaded: boolean;
+  supermarkets: NearbyPlace[];
+  gyms: NearbyPlace[];
+  canteens: Canteen[];
 };
 
 export type MatchRequest = {
@@ -95,6 +121,8 @@ export type MatchArea = {
   home_estimated: boolean | null;
   pros: Point[];
   cons: Point[];
+  // Missing on matches saved before this existed.
+  daily_life?: DailyLife | null;
 };
 
 export type MatchResponse = {

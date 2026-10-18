@@ -36,6 +36,17 @@ def test_neighborhood_detail(client: TestClient) -> None:
     body = res.json()
     assert body["pros"] and body["cons"]
     assert any(t["destination_slug"] == "ntua-zografou" for t in body["travel_times"])
+    # Nearest student restaurants come from athens.json, so they're always there.
+    canteens = body["canteens"]
+    assert canteens and len(canteens) <= 3
+    assert [c["minutes"] for c in canteens] == sorted(c["minutes"] for c in canteens)
+    assert body["supermarkets"] == sorted(
+        body["supermarkets"], key=lambda p: p["walk_minutes"]
+    )
+    # Empty supermarket/gym lists only mean "nothing nearby" once OSM data is loaded.
+    assert isinstance(body["nearby_loaded"], bool)
+    if not body["nearby_loaded"]:
+        assert body["supermarkets"] == [] and body["gyms"] == []
     assert client.get("/api/v1/neighborhoods/atlantis").status_code == 404
 
 
@@ -109,3 +120,40 @@ def test_save_and_list(client: TestClient, test_user: uuid.UUID) -> None:
 
     listed = client.get("/api/v1/match/saved", headers=headers).json()
     assert [m["id"] for m in listed] == [saved.json()["id"]]
+
+
+def test_match_results_include_the_students_own_canteen(client: TestClient) -> None:
+    dept = department_id(
+        client, "ntua", "ntua-zografou", "Electrical and Computer Engineering"
+    )
+    res = client.post(
+        "/api/v1/match", json={"department_id": dept, "weights": {"commute": 5}}
+    )
+    for area in res.json()["results"]:
+        canteen = area["daily_life"]["canteen"]
+        assert canteen["university"] == "NTUA (ΕΜΠ)"
+        assert isinstance(area["daily_life"]["nearby_loaded"], bool)
+
+
+def test_nearby_places_are_never_served_stale(client: TestClient) -> None:
+    """compute_nearby.py writes straight to Postgres, so reads must not be cached."""
+    import psycopg
+
+    from tests.conftest import TEST_DATABASE_URL
+
+    before = client.get("/api/v1/neighborhoods/zografou").json()
+    with psycopg.connect(TEST_DATABASE_URL, autocommit=True) as conn:
+        row = conn.execute(
+            "insert into public.nearby_places "
+            "(neighborhood_id, kind, osm_id, name, lat, lng, distance_m) "
+            "select id, 'supermarket', 'node/test', 'Test Market', lat, lng, 400 "
+            "from public.neighborhoods where slug = 'zografou' returning id"
+        ).fetchone()
+        try:
+            after = client.get("/api/v1/neighborhoods/zografou").json()
+            assert after["nearby_loaded"] is True
+            assert [p["name"] for p in after["supermarkets"]] == ["Test Market"]
+            assert after["supermarkets"][0]["walk_minutes"] == 6  # 400 m
+        finally:
+            conn.execute("delete from public.nearby_places where id = %s", (row[0],))
+    assert before["supermarkets"] == []

@@ -5,7 +5,14 @@ from tests.conftest import TEST_DATABASE_URL, requires_db
 
 pytestmark = requires_db
 
-TABLES = ("neighborhoods", "campuses", "departments", "transit_hubs", "travel_times")
+TABLES = (
+    "neighborhoods",
+    "campuses",
+    "departments",
+    "transit_hubs",
+    "travel_times",
+    "student_canteens",
+)
 
 
 def counts() -> dict[str, int]:

@@ -273,6 +273,68 @@
       ]
     }
   ],
+  "student_canteens": [
+    {
+      "slug": "nkua-ippokratous",
+      "university": "nkua",
+      "name": "NKUA University Club, Ippokratous",
+      "name_el": "Πανεπιστημιακή Λέσχη ΕΚΠΑ",
+      "address": "Ιπποκράτους 15, Αθήνα",
+      "lat": 37.982,
+      "lng": 23.7336,
+      "approximate": false
+    },
+    {
+      "slug": "nkua-zografou",
+      "university": "nkua",
+      "name": "NKUA student restaurant, Zografou campus",
+      "name_el": "Φοιτητική Λέσχη ΕΚΠΑ Πανεπιστημιούπολης",
+      "address": null,
+      "lat": 37.9685,
+      "lng": 23.783,
+      "approximate": true
+    },
+    {
+      "slug": "ntua-zografou",
+      "university": "ntua",
+      "name": "NTUA student restaurant, Zografou campus",
+      "name_el": "Φοιτητική Λέσχη ΕΜΠ Πολυτεχνειούπολης",
+      "address": null,
+      "lat": 37.978,
+      "lng": 23.783,
+      "approximate": true
+    },
+    {
+      "slug": "aua-votanikos",
+      "university": "aua",
+      "name": "AUA student restaurant",
+      "name_el": "Φοιτητική Λέσχη ΓΠΑ",
+      "address": "Ιερά Οδός 75, Αθήνα",
+      "lat": 37.9838,
+      "lng": 23.7056,
+      "approximate": false
+    },
+    {
+      "slug": "hua-kallithea",
+      "university": "hua",
+      "name": "HUA student restaurant",
+      "name_el": "Φοιτητικό Εστιατόριο Χαροκοπείου",
+      "address": "Ομήρου 9, Καλλιθέα",
+      "lat": 37.9623,
+      "lng": 23.7009,
+      "approximate": false
+    },
+    {
+      "slug": "unipi-main",
+      "university": "unipi",
+      "name": "UniPi student restaurant",
+      "name_el": "Φοιτητικό Εστιατόριο Πανεπιστημίου Πειραιώς",
+      "address": "Τσαμαδού 78, Πειραιάς",
+      "lat": 37.9412,
+      "lng": 23.6524,
+      "approximate": false
+    }
+  ],
   "transit_hubs": [
     {
       "slug": "ktel-kifisou",

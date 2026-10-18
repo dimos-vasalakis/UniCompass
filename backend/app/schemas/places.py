@@ -3,6 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from app.schemas.daily_life import CanteenOut, NearbyPlaceOut
 from app.schemas.match import Point
 
 
@@ -65,9 +66,20 @@ class TravelTimeOut(BaseModel):
     estimated: bool
 
 
-class NeighborhoodDetail(NeighborhoodSummary):
+class NeighborhoodBase(NeighborhoodSummary):
+    """The cacheable part of a detail page: it only changes when the seed does."""
+
     description: str
     pros: list[Point]
     cons: list[Point]
     sources: list[str]
     travel_times: list[TravelTimeOut]
+
+
+class NeighborhoodDetail(NeighborhoodBase):
+    # False until scripts/compute_nearby.py has run: then empty lists mean
+    # "not loaded", not "nothing nearby".
+    nearby_loaded: bool
+    supermarkets: list[NearbyPlaceOut]
+    gyms: list[NearbyPlaceOut]
+    canteens: list[CanteenOut]  # nearest first

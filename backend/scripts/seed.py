@@ -22,6 +22,7 @@ from app.models import (
     City,
     Department,
     Neighborhood,
+    StudentCanteen,
     TransitHub,
     TravelTime,
     University,
@@ -93,6 +94,19 @@ def seed(city_slug: str) -> None:
 
         upsert(
             session,
+            StudentCanteen,
+            [
+                {
+                    **{k: v for k, v in c.items() if k != "university"},
+                    "university_id": uni_ids[c["university"]],
+                }
+                for c in data["student_canteens"]
+            ],
+            ["slug"],
+        )
+
+        upsert(
+            session,
             TransitHub,
             [{**h, "city_id": city_id} for h in data["transit_hubs"]],
             ["slug"],
@@ -144,7 +158,8 @@ def seed(city_slug: str) -> None:
 
     print(
         f"Seeded {city_slug}: {len(data['neighborhoods'])} neighborhoods, "
-        f"{len(data['campuses'])} campuses, {len(data['transit_hubs'])} hubs, "
+        f"{len(data['campuses'])} campuses, {len(data['student_canteens'])} canteens, "
+        f"{len(data['transit_hubs'])} hubs, "
         f"{len(estimates)} travel-time pairs (estimates only where missing)."
     )
 

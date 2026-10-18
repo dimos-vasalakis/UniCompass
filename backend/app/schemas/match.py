@@ -3,6 +3,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
+from app.schemas.daily_life import DailyLife
+
 Factor = Literal[
     "safety",
     "commute",
@@ -53,6 +55,7 @@ class MatchArea(BaseModel):
     home_estimated: bool | None
     pros: list[Point]
     cons: list[Point]
+    daily_life: DailyLife | None = None
 
 
 class MatchResponse(BaseModel):

@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from app.core.db import DbSession
 from app.core.security import CurrentUserDep
-from app.models import SavedMatch
+from app.models import SavedMatch, University
 from app.schemas.match import (
     MatchRequest,
     MatchResponse,
@@ -24,6 +24,8 @@ async def _run(body: MatchRequest, db: DbSession) -> MatchResponse:
 
     areas = await places.load_match_inputs(db, department.campus_id, body.home_hub_slug)
     results, within = run_match(areas, body)
+    university = await db.get(University, department.university_id)
+    await places.attach_daily_life(db, results, university.slug)
     return MatchResponse(results=results, considered=len(areas), within_limits=within)
 
 

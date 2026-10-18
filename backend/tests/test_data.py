@@ -55,6 +55,19 @@ def test_every_university_has_a_campus(data) -> None:
     assert {u["slug"] for u in data["universities"]} == with_campus
 
 
+def test_student_canteens(data) -> None:
+    unis = {u["slug"] for u in data["universities"]}
+    canteens = data["student_canteens"]
+    assert unique([c["slug"] for c in canteens])
+    for c in canteens:
+        assert c["university"] in unis, c["slug"]
+        assert c["name"].strip() and c["name_el"].strip(), c["slug"]
+        assert in_attica(c), f"{c['slug']} coordinates outside Attica"
+        assert isinstance(c["approximate"], bool), c["slug"]
+        # Only a precise position can come with a street address.
+        assert c["approximate"] or c["address"], c["slug"]
+
+
 def test_hubs(data) -> None:
     for h in data["transit_hubs"]:
         assert h["kind"] in HUB_KINDS, h["slug"]
