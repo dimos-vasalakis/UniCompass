@@ -199,6 +199,9 @@ export const el: Dictionary = {
     sentSigninBefore: "Αν υπάρχει λογαριασμός για το ",
     sentSigninAfter: ", του στείλαμε έναν σύνδεσμο σύνδεσης. Άνοιξέ τον σε αυτή τη συσκευή για να συνδεθείς. Δεν ήρθε email; ",
     createAccount: "Δημιούργησε λογαριασμό",
+    notConfigured: "Η σύνδεση δεν έχει ρυθμιστεί ακόμα: πρόσθεσε το Supabase URL και το anon key στο {file} και κάνε επανεκκίνηση του dev server. Μπορείς πάντως να ",
+    notConfiguredLink: "βρεις τις καλύτερες περιοχές",
+    notConfiguredAfter: " χωρίς λογαριασμό.",
   },
   dashboard: {
     welcome: "Καλώς ήρθες, {email}",

@@ -100,12 +100,13 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
 
       {!configured && (
         <p className="rounded-lg border border-accent bg-accent/15 p-3 text-sm">
-          Sign-in isn&apos;t set up yet: add your Supabase URL and anon key to <code>frontend/.env.local</code> and
-          restart the dev server. You can still{" "}
+          {d.auth.notConfigured.split("{file}")[0]}
+          <code>frontend/.env.local</code>
+          {d.auth.notConfigured.split("{file}")[1]}
           <Link href="/match" className="font-medium text-brand underline">
-            find your best areas
-          </Link>{" "}
-          without an account.
+            {d.auth.notConfiguredLink}
+          </Link>
+          {d.auth.notConfiguredAfter}
         </p>
       )}
 

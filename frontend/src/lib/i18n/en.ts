@@ -199,6 +199,9 @@ export const en = {
     sentSigninBefore: "If there's an account for ",
     sentSigninAfter: ", we sent it a sign-in link. Open it on this device to sign in. No email? ",
     createAccount: "Create an account",
+    notConfigured: "Sign-in isn't set up yet: add your Supabase URL and anon key to {file} and restart the dev server. You can still ",
+    notConfiguredLink: "find your best areas",
+    notConfiguredAfter: " without an account.",
   },
   dashboard: {
     welcome: "Welcome, {email}",

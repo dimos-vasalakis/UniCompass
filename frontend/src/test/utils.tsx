@@ -8,7 +8,7 @@ import { en } from "@/lib/i18n/en";
 /** Like Testing Library's render, inside the language provider the app has (English by default). */
 export function render(ui: ReactElement, { locale = "en" }: { locale?: Locale } = {}) {
   return rtlRender(
-    <LocaleProvider locale={locale} dict={locale === "el" ? el : en}>
+    <LocaleProvider locale={locale} dicts={{ en, el }}>
       {ui}
     </LocaleProvider>,
   );

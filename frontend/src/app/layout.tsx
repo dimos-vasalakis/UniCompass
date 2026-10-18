@@ -28,7 +28,7 @@ const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");if(t!=="light"&&t!
 async function LocaleShell({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   return (
-    <LocaleProvider locale={locale} dict={DICTIONARIES[locale]}>
+    <LocaleProvider locale={locale} dicts={DICTIONARIES}>
       <SiteHeader />
       {children}
     </LocaleProvider>

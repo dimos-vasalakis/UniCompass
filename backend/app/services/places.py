@@ -188,25 +188,24 @@ async def list_neighborhoods(db: AsyncSession) -> list[NeighborhoodSummary]:
 
 async def _nearby_places(
     db: AsyncSession, slugs: list[str]
-) -> dict[str, list[NearbyPlace]]:
-    """Closest first, per neighborhood slug. Never cached: compute_nearby.py
-    writes these straight to Postgres and can't invalidate Upstash."""
+) -> tuple[dict[str, list[NearbyPlace]], bool]:
+    """Closest first, per neighborhood slug, plus whether compute_nearby.py has
+    run at all. One query, and never cached: the script writes straight to
+    Postgres and can't invalidate Upstash."""
+    loaded = exists().where(NearbyPlace.id.is_not(None)).label("loaded")
     rows = (
         await db.execute(
-            select(Neighborhood.slug, NearbyPlace)
-            .join(NearbyPlace, NearbyPlace.neighborhood_id == Neighborhood.id)
+            select(Neighborhood.slug, NearbyPlace, loaded)
+            .outerjoin(NearbyPlace, NearbyPlace.neighborhood_id == Neighborhood.id)
             .where(Neighborhood.slug.in_(slugs))
             .order_by(NearbyPlace.distance_m)
         )
     ).all()
     out: dict[str, list[NearbyPlace]] = {slug: [] for slug in slugs}
-    for slug, place in rows:
-        out[slug].append(place)
-    return out
-
-
-async def _nearby_loaded(db: AsyncSession) -> bool:
-    return await db.scalar(select(exists().where(NearbyPlace.id.is_not(None)))) or False
+    for slug, place, _ in rows:
+        if place is not None:
+            out[slug].append(place)
+    return out, any(row[2] for row in rows)
 
 
 def _place_out(p: NearbyPlace) -> NearbyPlaceOut:
@@ -285,10 +284,11 @@ async def get_neighborhood(
     if base is None:
         return None
 
-    nearby = (await _nearby_places(db, [slug]))[slug]
+    by_slug, loaded = await _nearby_places(db, [slug])
+    nearby = by_slug[slug]
     return NeighborhoodDetail(
         **base.model_dump(),
-        nearby_loaded=await _nearby_loaded(db),
+        nearby_loaded=loaded,
         supermarkets=[_place_out(p) for p in nearby if p.kind == "supermarket"],
         gyms=[_place_out(p) for p in nearby if p.kind == "gym"],
         canteens=_canteens_near(await list_canteens(db), base.lat, base.lng)[:3],
@@ -301,8 +301,7 @@ async def attach_daily_life(
     """Fill `daily_life` on match results; the canteen is the student's own university's."""
     if not areas:
         return
-    nearby = await _nearby_places(db, [a.slug for a in areas])
-    loaded = await _nearby_loaded(db)
+    nearby, loaded = await _nearby_places(db, [a.slug for a in areas])
     canteens = await list_canteens(db)
     for area in areas:
         mine = nearby[area.slug]

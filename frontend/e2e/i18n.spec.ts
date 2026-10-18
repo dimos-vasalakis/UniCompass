@@ -61,3 +61,21 @@ test("Greek header still fits on one line", async ({ page, context }) => {
   const box = await page.getByRole("navigation").boundingBox();
   expect(box!.height).toBeLessThan(70);
 });
+
+test("pages visited before switching language are Greek too", async ({ page }) => {
+  // Visit (and so cache) the English pages first.
+  await page.goto("/neighborhoods");
+  await expect(page.getByRole("heading", { name: "Central Athens" })).toBeVisible();
+  await page.getByRole("link", { name: /Zografou/ }).first().click();
+  await expect(page.getByRole("heading", { name: "Advantages and disadvantages" })).toBeVisible();
+  await page.getByRole("link", { name: "← All areas" }).click();
+  await expect(page.getByRole("heading", { name: "Central Athens" })).toBeVisible();
+
+  await page.getByRole("button", { name: /Language: Ελληνικά/ }).click();
+  await expect(page.getByRole("heading", { name: "Κέντρο Αθήνας" })).toBeVisible();
+
+  // Client-side navigation must not serve the cached English page.
+  await page.getByRole("link", { name: /Ζωγράφου/ }).first().click();
+  await expect(page.getByRole("heading", { name: "Πλεονεκτήματα και μειονεκτήματα" })).toBeVisible();
+  await expect(page.getByText("Advantages and disadvantages")).toHaveCount(0);
+});

@@ -28,6 +28,7 @@ from app.models import (
     University,
 )
 from app.services.geo import estimate_transit_minutes
+from scripts.clear_cache import clear_places_cache
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -182,11 +183,13 @@ def seed(city_slug: str) -> None:
                 )
             )
 
+    cleared = clear_places_cache()
     print(
         f"Seeded {city_slug}: {len(data['neighborhoods'])} neighborhoods, "
         f"{len(data['campuses'])} campuses, {len(data['student_canteens'])} canteens, "
         f"{len(data['transit_hubs'])} hubs, "
-        f"{len(estimates)} travel-time pairs (estimates only where missing)."
+        f"{len(estimates)} travel-time pairs (estimates only where missing). "
+        f"Cleared {cleared} cached entries."
     )
 
 
