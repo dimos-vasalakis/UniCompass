@@ -31,10 +31,14 @@ def test_seed_is_idempotent() -> None:
 
 def test_seed_keeps_google_travel_times() -> None:
     with psycopg.connect(TEST_DATABASE_URL) as conn:
-        tt_id = conn.execute(
+        tt_id, minutes, source = conn.execute(
+            "select id, transit_minutes, source from public.travel_times limit 1"
+        ).fetchone()
+        conn.execute(
             "update public.travel_times set transit_minutes = 7, source = 'google' "
-            "where id = (select id from public.travel_times limit 1) returning id"
-        ).fetchone()[0]
+            "where id = %s",
+            (tt_id,),
+        )
     seed("athens")
     with psycopg.connect(TEST_DATABASE_URL) as conn:
         row = conn.execute(
@@ -42,6 +46,9 @@ def test_seed_keeps_google_travel_times() -> None:
             (tt_id,),
         ).fetchone()
         assert row == (7, "google")
+        # Put the row back: other tests (and e2e) share this database.
         conn.execute(
-            "update public.travel_times set source = 'estimate' where id = %s", (tt_id,)
+            "update public.travel_times set transit_minutes = %s, source = %s "
+            "where id = %s",
+            (minutes, source, tt_id),
         )

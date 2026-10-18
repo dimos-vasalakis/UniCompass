@@ -157,3 +157,36 @@ def test_nearby_places_are_never_served_stale(client: TestClient) -> None:
         finally:
             conn.execute("delete from public.nearby_places where id = %s", (row[0],))
     assert before["supermarkets"] == []
+
+
+def test_greek_content_with_english_default(client: TestClient) -> None:
+    en = client.get("/api/v1/neighborhoods/zografou").json()
+    el = client.get("/api/v1/neighborhoods/zografou?lang=el").json()
+    assert en["description"].startswith("The classic student district")
+    assert el["description"].startswith("Η κλασική φοιτητική περιοχή")
+    assert len(el["pros"]) == len(en["pros"])
+    assert [p["factor"] for p in el["pros"]] == [p["factor"] for p in en["pros"]]
+    assert el["scores"] == en["scores"] and el["slug"] == en["slug"]
+    assert any(
+        t["destination_name"] == "Πολυτεχνειούπολη Ζωγράφου" for t in el["travel_times"]
+    )
+
+    unis = client.get("/api/v1/universities?lang=el").json()
+    assert {u["slug"]: u["name"] for u in unis}["ntua"] == "Εθνικό Μετσόβιο Πολυτεχνείο"
+    assert all(d["name"] for u in unis for d in u["departments"])
+    hubs = client.get("/api/v1/hubs?lang=el").json()
+    assert {h["slug"]: h["name"] for h in hubs}["piraeus-port"] == "Λιμάνι Πειραιά"
+
+    assert client.get("/api/v1/neighborhoods/zografou?lang=fr").status_code == 422
+
+
+def test_match_results_follow_the_language(client: TestClient) -> None:
+    dept = department_id(
+        client, "ntua", "ntua-zografou", "Electrical and Computer Engineering"
+    )
+    body = {"department_id": dept, "weights": {"commute": 5}}
+    en = client.post("/api/v1/match", json=body).json()["results"]
+    el = client.post("/api/v1/match?lang=el", json=body).json()["results"]
+    assert [a["slug"] for a in en] == [a["slug"] for a in el]
+    assert all(a["description"] != b["description"] for a, b in zip(en, el))
+    assert all(a["pros"][0]["text"] != b["pros"][0]["text"] for a, b in zip(en, el))

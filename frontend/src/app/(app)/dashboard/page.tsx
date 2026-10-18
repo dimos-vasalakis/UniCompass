@@ -2,10 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { getPrivate } from "@/lib/api/server";
+import { areaNames, fmt } from "@/lib/i18n/config";
+import { getDictionary, getLocale } from "@/lib/i18n/server";
 import { getAccessToken, getUser } from "@/lib/supabase/server";
 import type { SavedMatch } from "@/types";
 
 async function Dashboard() {
+  const d = (await getDictionary()).dashboard;
+  const locale = await getLocale();
   const user = await getUser();
   if (!user) redirect("/login?next=/dashboard");
 
@@ -22,16 +26,16 @@ async function Dashboard() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold">Welcome, {user.email}</h1>
+      <h1 className="text-2xl font-semibold">{fmt(d.welcome, { email: user.email ?? "" })}</h1>
       <section className="mt-8">
-        <h2 className="text-xl font-semibold">Your saved searches</h2>
+        <h2 className="text-xl font-semibold">{d.saved}</h2>
         {savedError ? (
-          <p className="mt-2 text-muted">Couldn&apos;t load your saved searches. Please try again later.</p>
+          <p className="mt-2 text-muted">{d.loadError}</p>
         ) : saved.length === 0 ? (
           <p className="mt-2 text-muted">
-            Nothing saved yet.{" "}
+            {d.nothingSaved}
             <Link href="/match" className="font-medium text-brand hover:underline">
-              Find your best areas →
+              {d.findAreas}
             </Link>
           </p>
         ) : (
@@ -42,7 +46,7 @@ async function Dashboard() {
                   {m.results.map((r, i) => (
                     <li key={r.slug}>
                       <Link href={`/neighborhoods/${r.slug}`} className="hover:text-brand">
-                        <span className="text-muted">{i + 1}.</span> <span className="font-medium">{r.name}</span>{" "}
+                        <span className="text-muted">{i + 1}.</span> <span className="font-medium">{areaNames(locale, r)[0]}</span>{" "}
                         <span className="text-sm text-muted">{r.match}%</span>
                       </Link>
                     </li>

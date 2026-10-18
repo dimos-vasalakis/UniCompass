@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useDict } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 
 export function SignOutButton() {
+  const d = useDict();
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -31,7 +33,7 @@ export function SignOutButton() {
   return (
     <>
       <button type="button" onClick={() => setConfirming(true)} className="hover:text-brand">
-        Sign out
+        {d.common.signOut}
       </button>
       {confirming && (
         <div
@@ -46,9 +48,9 @@ export function SignOutButton() {
             className="w-full max-w-sm whitespace-normal rounded-xl border border-border bg-background p-5 shadow-xl"
           >
             <h2 id="signout-title" className="text-lg font-semibold">
-              Sign out?
+              {d.signOutDialog.title}
             </h2>
-            <p className="mt-1 text-sm text-muted">Are you sure you want to sign out of UniCompass?</p>
+            <p className="mt-1 text-sm text-muted">{d.signOutDialog.body}</p>
             <div className="mt-4 flex justify-end gap-2">
               <button
                 ref={cancelRef}
@@ -57,7 +59,7 @@ export function SignOutButton() {
                 disabled={busy}
                 className="rounded-lg border border-border px-3 py-2 font-medium hover:bg-brand-light disabled:opacity-60"
               >
-                Cancel
+                {d.signOutDialog.cancel}
               </button>
               <button
                 type="button"
@@ -65,7 +67,7 @@ export function SignOutButton() {
                 disabled={busy}
                 className="rounded-lg bg-brand px-3 py-2 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
               >
-                {busy ? "Signing out…" : "Sign out"}
+                {busy ? d.signOutDialog.busy : d.signOutDialog.confirm}
               </button>
             </div>
           </div>

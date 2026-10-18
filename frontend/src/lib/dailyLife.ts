@@ -1,12 +1,14 @@
+import { fmt } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/en";
 import type { Canteen, NearbyPlace } from "@/types";
 
-export function walkLabel(p: NearbyPlace): string {
-  return `${p.walk_minutes} min walk`;
+export function walkLabel(d: Dictionary, p: NearbyPlace): string {
+  return fmt(d.daily.walk, { n: p.walk_minutes });
 }
 
 // Canteen times are always estimates, hence the "~".
-export function canteenLabel(c: Canteen): string {
-  return c.mode === "walk" ? `~${c.minutes} min walk` : `~${c.minutes} min by transit`;
+export function canteenLabel(d: Dictionary, c: Canteen): string {
+  return fmt(c.mode === "walk" ? d.daily.walkEstimate : d.daily.transit, { n: c.minutes });
 }
 
 export function mapsUrl(lat: number, lng: number, name: string): string {

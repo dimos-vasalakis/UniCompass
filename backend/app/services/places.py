@@ -5,6 +5,7 @@ import uuid
 from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.lang import Lang, pick, points
 from app.models import (
     Campus,
     Department,
@@ -58,8 +59,8 @@ def _summary(n: Neighborhood) -> NeighborhoodSummary:
     )
 
 
-async def list_universities(db: AsyncSession) -> list[UniversityOut]:
-    key = f"{PREFIX}:universities"
+async def list_universities(db: AsyncSession, lang: Lang) -> list[UniversityOut]:
+    key = f"{PREFIX}:universities:{lang}"
     if cached := await cache_get(key):
         return [UniversityOut(**u) for u in cached]
 
@@ -71,15 +72,24 @@ async def list_universities(db: AsyncSession) -> list[UniversityOut]:
     out = [
         UniversityOut(
             slug=u.slug,
-            name=u.name,
+            name=pick(lang, u.name, u.name_el),
             short_name=u.short_name,
             campuses=[
-                {"slug": c.slug, "name": c.name, "lat": c.lat, "lng": c.lng}
+                {
+                    "slug": c.slug,
+                    "name": pick(lang, c.name, c.name_el),
+                    "lat": c.lat,
+                    "lng": c.lng,
+                }
                 for c in campuses
                 if c.university_id == u.id
             ],
             departments=[
-                {"id": d.id, "name": d.name, "campus_slug": campus_slug[d.campus_id]}
+                {
+                    "id": d.id,
+                    "name": pick(lang, d.name, d.name_el),
+                    "campus_slug": campus_slug[d.campus_id],
+                }
                 for d in depts
                 if d.university_id == u.id
             ],
@@ -90,8 +100,8 @@ async def list_universities(db: AsyncSession) -> list[UniversityOut]:
     return out
 
 
-async def list_hubs(db: AsyncSession) -> list[HubOut]:
-    key = f"{PREFIX}:hubs"
+async def list_hubs(db: AsyncSession, lang: Lang) -> list[HubOut]:
+    key = f"{PREFIX}:hubs:{lang}"
     if cached := await cache_get(key):
         return [HubOut(**h) for h in cached]
 
@@ -100,7 +110,12 @@ async def list_hubs(db: AsyncSession) -> list[HubOut]:
     ).all()
     out = [
         HubOut(
-            slug=h.slug, name=h.name, kind=h.kind, serves=h.serves, lat=h.lat, lng=h.lng
+            slug=h.slug,
+            name=pick(lang, h.name, h.name_el),
+            kind=h.kind,
+            serves=pick(lang, h.serves, h.serves_el),
+            lat=h.lat,
+            lng=h.lng,
         )
         for h in hubs
     ]
@@ -200,8 +215,10 @@ def _place_out(p: NearbyPlace) -> NearbyPlaceOut:
     )
 
 
-async def _neighborhood_base(db: AsyncSession, slug: str) -> NeighborhoodBase | None:
-    key = f"{PREFIX}:neighborhood:{slug}"
+async def _neighborhood_base(
+    db: AsyncSession, slug: str, lang: Lang
+) -> NeighborhoodBase | None:
+    key = f"{PREFIX}:neighborhood:{lang}:{slug}"
     if cached := await cache_get(key):
         return NeighborhoodBase(**cached)
 
@@ -230,7 +247,7 @@ async def _neighborhood_base(db: AsyncSession, slug: str) -> NeighborhoodBase | 
     travel = [
         TravelTimeOut(
             destination_slug=c.slug,
-            destination_name=c.name,
+            destination_name=pick(lang, c.name, c.name_el),
             destination_type="campus",
             group=u.short_name,
             minutes=t.transit_minutes,
@@ -240,7 +257,7 @@ async def _neighborhood_base(db: AsyncSession, slug: str) -> NeighborhoodBase | 
     ] + [
         TravelTimeOut(
             destination_slug=h.slug,
-            destination_name=h.name,
+            destination_name=pick(lang, h.name, h.name_el),
             destination_type="hub",
             group=h.kind,
             minutes=t.transit_minutes,
@@ -251,9 +268,9 @@ async def _neighborhood_base(db: AsyncSession, slug: str) -> NeighborhoodBase | 
 
     out = NeighborhoodBase(
         **_summary(n).model_dump(),
-        description=n.description,
-        pros=n.pros,
-        cons=n.cons,
+        description=pick(lang, n.description, n.description_el),
+        pros=points(lang, n.pros),
+        cons=points(lang, n.cons),
         sources=n.sources,
         travel_times=travel,
     )
@@ -261,8 +278,10 @@ async def _neighborhood_base(db: AsyncSession, slug: str) -> NeighborhoodBase | 
     return out
 
 
-async def get_neighborhood(db: AsyncSession, slug: str) -> NeighborhoodDetail | None:
-    base = await _neighborhood_base(db, slug)
+async def get_neighborhood(
+    db: AsyncSession, slug: str, lang: Lang
+) -> NeighborhoodDetail | None:
+    base = await _neighborhood_base(db, slug, lang)
     if base is None:
         return None
 
@@ -305,10 +324,10 @@ async def get_department(
 
 
 async def load_match_inputs(
-    db: AsyncSession, campus_id: uuid.UUID, hub_slug: str | None
+    db: AsyncSession, campus_id: uuid.UUID, hub_slug: str | None, lang: Lang
 ) -> list[AreaInput]:
     """Every area in the campus's city, with commute (and home trip) minutes."""
-    key = f"{PREFIX}:match-inputs:{campus_id}:{hub_slug or '-'}"
+    key = f"{PREFIX}:match-inputs:{lang}:{campus_id}:{hub_slug or '-'}"
     if cached := await cache_get(key):
         return [AreaInput(**a) for a in cached]
 
@@ -350,11 +369,11 @@ async def load_match_inputs(
                 zone=n.zone,
                 lat=n.lat,
                 lng=n.lng,
-                description=n.description,
+                description=pick(lang, n.description, n.description_el),
                 typical_studio_rent=n.typical_studio_rent,
                 scores={f: getattr(n, f) for f in SCORE_FACTORS},
-                pros=n.pros,
-                cons=n.cons,
+                pros=points(lang, n.pros),
+                cons=points(lang, n.cons),
                 commute_minutes=t.transit_minutes,
                 commute_estimated=t.source == "estimate",
                 home_minutes=h.transit_minutes if h else None,

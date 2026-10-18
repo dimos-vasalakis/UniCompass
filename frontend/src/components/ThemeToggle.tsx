@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useDict } from "@/lib/i18n/client";
 
 type Theme = "light" | "dark";
 
 export function ThemeToggle() {
+  const d = useDict();
   // Unknown until mounted: the inline script in layout.tsx sets the real theme before paint.
   const [theme, setTheme] = useState<Theme | null>(null);
 
@@ -30,8 +32,8 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       disabled={theme === null}
-      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      title={dark ? "Light mode" : "Dark mode"}
+      aria-label={dark ? d.header.switchToLight : d.header.switchToDark}
+      title={dark ? d.header.lightMode : d.header.darkMode}
       className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-brand-light disabled:opacity-0"
     >
       {dark ? (

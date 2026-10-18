@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { FACTORS, FACTOR_BY_KEY, HUB_KIND_LABELS, SCORE_LABELS, ZONES } from "./factors";
+import { FACTOR_KEYS, SCORE_KEYS, ZONE_KEYS } from "./factors";
+import { el } from "./i18n/el";
+import { en } from "./i18n/en";
 
 const BACKEND = path.resolve(__dirname, "../../../backend");
 
@@ -14,28 +16,35 @@ function backendFactors(): string[] {
 
 const athens = JSON.parse(readFileSync(path.join(BACKEND, "data/athens.json"), "utf8"));
 
+const DICTIONARIES = { en, el };
+
 describe("factors stay in sync with the backend", () => {
   it("has a slider for every backend factor, once", () => {
-    const keys = FACTORS.map((f) => f.key);
-    expect(new Set(keys).size).toBe(keys.length);
-    expect([...keys].sort()).toEqual(backendFactors().sort());
+    expect(new Set(FACTOR_KEYS).size).toBe(FACTOR_KEYS.length);
+    expect([...FACTOR_KEYS].sort()).toEqual(backendFactors().sort());
   });
 
-  it("labels every factor", () => {
+  it.each(Object.entries(DICTIONARIES))("%s labels every factor", (_, d) => {
     for (const key of backendFactors()) {
-      const f = FACTOR_BY_KEY[key as keyof typeof FACTOR_BY_KEY];
+      const f = d.factors[key as keyof typeof d.factors];
       expect(f.label && f.driver && f.hint, key).toBeTruthy();
     }
   });
 
-  it("labels every score shown on area pages", () => {
+  it("shows exactly the scores the data has", () => {
     for (const n of athens.neighborhoods) {
-      expect(Object.keys(n.scores).sort()).toEqual(Object.keys(SCORE_LABELS).sort());
+      expect(Object.keys(n.scores).sort()).toEqual([...SCORE_KEYS].sort());
     }
   });
 
-  it("knows every zone and hub kind in the data", () => {
-    for (const n of athens.neighborhoods) expect(ZONES[n.zone], n.slug).toBeDefined();
-    for (const h of athens.transit_hubs) expect(HUB_KIND_LABELS[h.kind], h.slug).toBeDefined();
+  it.each(Object.entries(DICTIONARIES))("%s knows every score, zone and hub kind in the data", (_, d) => {
+    for (const k of SCORE_KEYS) expect(d.scores[k], k).toBeTruthy();
+    for (const n of athens.neighborhoods) {
+      expect(ZONE_KEYS as readonly string[], n.slug).toContain(n.zone);
+      expect(d.zones[n.zone as keyof typeof d.zones], n.slug).toBeTruthy();
+    }
+    for (const h of athens.transit_hubs) {
+      expect(d.hubKinds[h.kind as keyof typeof d.hubKinds], h.slug).toBeTruthy();
+    }
   });
 });

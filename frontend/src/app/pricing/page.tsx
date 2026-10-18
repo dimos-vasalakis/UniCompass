@@ -1,8 +1,10 @@
 "use client";
 
 import { apiFetch } from "@/lib/api/client";
+import { useDict } from "@/lib/i18n/client";
 
 export default function PricingPage() {
+  const d = useDict().pricing;
   async function upgrade() {
     const { url } = await apiFetch<{ url: string }>("/billing/checkout", {
       method: "POST",
@@ -12,12 +14,12 @@ export default function PricingPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 p-6">
-      <h1 className="text-2xl font-semibold">UniCompass Premium</h1>
+      <h1 className="text-2xl font-semibold">{d.title}</h1>
       <button
         onClick={upgrade}
         className="mt-4 rounded bg-accent px-4 py-2 font-semibold text-foreground hover:bg-accent-dark"
       >
-        Upgrade
+        {d.upgrade}
       </button>
     </main>
   );

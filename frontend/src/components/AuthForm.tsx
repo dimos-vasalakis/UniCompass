@@ -4,31 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useDict } from "@/lib/i18n/client";
 import { safeNext } from "@/lib/redirect";
 import { createClient } from "@/lib/supabase/client";
 
 type Mode = "signin" | "signup";
 
-const COPY = {
-  signin: {
-    title: "Welcome back",
-    subtitle: "Sign in to see your saved areas.",
-    oauth: "Continue with",
-    email: "Email me a sign-in link",
-    switchText: "New to UniCompass?",
-    switchLink: "Create an account",
-    switchHref: "/signup",
-  },
-  signup: {
-    title: "Create your free account",
-    subtitle: "Save your best areas and come back to them anytime.",
-    oauth: "Sign up with",
-    email: "Create account",
-    switchText: "Already have an account?",
-    switchLink: "Sign in",
-    switchHref: "/login",
-  },
-} as const;
+const SWITCH_HREF = { signin: "/signup", signup: "/login" } as const;
 
 function GoogleIcon() {
   return (
@@ -50,7 +32,8 @@ function GitHubIcon() {
 }
 
 export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean }) {
-  const copy = COPY[mode];
+  const d = useDict();
+  const copy = d.auth[mode];
   const params = useSearchParams();
   const next = safeNext(params.get("next"));
   const [fullName, setFullName] = useState("");
@@ -58,7 +41,7 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(
-    params.get("error") === "auth" ? "That sign-in link is invalid or has expired. Please try again." : null,
+    params.get("error") === "auth" ? d.auth.invalidLink : null,
   );
 
   function callbackUrl() {
@@ -103,7 +86,7 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
   if (next) switchParams.set("next", next);
   if (email) switchParams.set("email", email);
   const switchQuery = switchParams.toString();
-  const switchHref = switchQuery ? `${copy.switchHref}?${switchQuery}` : copy.switchHref;
+  const switchHref = switchQuery ? `${SWITCH_HREF[mode]}?${switchQuery}` : SWITCH_HREF[mode];
   const input =
     "w-full rounded-lg border border-border px-3 py-2.5 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
 
@@ -128,17 +111,20 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
 
       {sent ? (
         <div className="rounded-lg bg-brand-light p-4 text-center">
-          <p className="font-medium">Check your email</p>
+          <p className="font-medium">{d.auth.checkEmail}</p>
           {mode === "signup" ? (
             <p className="mt-1 text-sm text-muted">
-              We sent a link to <strong>{email}</strong>. Open it on this device to finish creating your account.
+              {d.auth.sentSignupBefore}
+              <strong>{email}</strong>
+              {d.auth.sentSignupAfter}
             </p>
           ) : (
             <p className="mt-1 text-sm text-muted">
-              If there&apos;s an account for <strong>{email}</strong>, we sent it a sign-in link. Open it on this
-              device to sign in. No email?{" "}
+              {d.auth.sentSigninBefore}
+              <strong>{email}</strong>
+              {d.auth.sentSigninAfter}
               <Link href={switchHref} className="font-medium text-brand underline">
-                Create an account
+                {d.auth.createAccount}
               </Link>
             </p>
           )}
@@ -164,7 +150,7 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
 
           <div className="flex items-center gap-3 text-sm text-muted">
             <span className="h-px flex-1 bg-border" />
-            or with email
+            {d.auth.orWithEmail}
             <span className="h-px flex-1 bg-border" />
           </div>
 
@@ -175,7 +161,7 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
                 autoComplete="name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Your name"
+                placeholder={d.auth.namePlaceholder}
                 className={input}
               />
             )}
@@ -193,7 +179,7 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
               disabled={busy}
               className="rounded-lg bg-brand px-3 py-2.5 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
             >
-              {busy ? "Sending…" : copy.email}
+              {busy ? d.auth.sending : copy.email}
             </button>
           </form>
         </fieldset>

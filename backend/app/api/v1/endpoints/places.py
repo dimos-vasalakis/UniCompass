@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.core.db import DbSession
+from app.core.lang import LangParam
 from app.schemas.places import (
     HubOut,
     NeighborhoodDetail,
@@ -13,13 +14,13 @@ router = APIRouter(tags=["places"])
 
 
 @router.get("/universities", response_model=list[UniversityOut])
-async def universities(db: DbSession) -> list[UniversityOut]:
-    return await places.list_universities(db)
+async def universities(db: DbSession, lang: LangParam = "en") -> list[UniversityOut]:
+    return await places.list_universities(db, lang)
 
 
 @router.get("/hubs", response_model=list[HubOut])
-async def hubs(db: DbSession) -> list[HubOut]:
-    return await places.list_hubs(db)
+async def hubs(db: DbSession, lang: LangParam = "en") -> list[HubOut]:
+    return await places.list_hubs(db, lang)
 
 
 @router.get("/neighborhoods", response_model=list[NeighborhoodSummary])
@@ -28,8 +29,10 @@ async def neighborhoods(db: DbSession) -> list[NeighborhoodSummary]:
 
 
 @router.get("/neighborhoods/{slug}", response_model=NeighborhoodDetail)
-async def neighborhood(slug: str, db: DbSession) -> NeighborhoodDetail:
-    detail = await places.get_neighborhood(db, slug)
+async def neighborhood(
+    slug: str, db: DbSession, lang: LangParam = "en"
+) -> NeighborhoodDetail:
+    detail = await places.get_neighborhood(db, slug, lang)
     if detail is None:
         raise HTTPException(404, "Neighborhood not found")
     return detail

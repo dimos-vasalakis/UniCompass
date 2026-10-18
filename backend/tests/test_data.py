@@ -8,7 +8,7 @@ import pytest
 from app.services.matching import SCORE_FACTORS
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-CITY_FILES = sorted(DATA_DIR.glob("*.json"))
+CITY_FILES = sorted(p for p in DATA_DIR.glob("*.json") if ".el." not in p.name)
 POINT_FACTORS = {*SCORE_FACTORS, "rent", "transport", None}
 HUB_KINDS = {"ktel", "airport", "port", "rail"}
 ZONES = {"center", "east", "north", "south", "west", "piraeus"}
@@ -94,3 +94,49 @@ def test_neighborhoods(data) -> None:
 
 def test_neighborhood_names_are_unique(data) -> None:
     assert unique([n["name"] for n in data["neighborhoods"]])
+
+
+@pytest.fixture(scope="module")
+def greek(data) -> dict:
+    path = DATA_DIR / f"{data['city']['slug']}.el.json"
+    assert path.exists(), f"missing {path.name}"
+    return json.loads(path.read_text())
+
+
+def has_greek(text: str) -> bool:
+    return any("\u0370" <= ch <= "\u03ff" or "\u1f00" <= ch <= "\u1fff" for ch in text)
+
+
+def mixed_script(text: str) -> bool:
+    """A Latin letter glued to a Greek one, e.g. a typo'd 'Nαυπηγών'."""
+    import re
+
+    return bool(re.search(r"[A-Za-z][\u0370-\u03ff]|[\u0370-\u03ff][A-Za-z]", text))
+
+
+def test_greek_covers_every_item(data, greek) -> None:
+    assert set(greek["universities"]) == {u["slug"] for u in data["universities"]}
+    assert set(greek["campuses"]) == {c["slug"] for c in data["campuses"]}
+    assert set(greek["transit_hubs"]) == {h["slug"] for h in data["transit_hubs"]}
+    assert set(greek["neighborhoods"]) == {n["slug"] for n in data["neighborhoods"]}
+    departments = {d for c in data["campuses"] for d in c["departments"]}
+    assert set(greek["departments"]) == departments, "unused or missing departments"
+
+
+def test_greek_points_line_up_with_english(data, greek) -> None:
+    for n in data["neighborhoods"]:
+        el = greek["neighborhoods"][n["slug"]]
+        assert len(el["pros"]) == len(n["pros"]), f"{n['slug']}: pros out of step"
+        assert len(el["cons"]) == len(n["cons"]), f"{n['slug']}: cons out of step"
+
+
+def test_greek_texts_are_greek(data, greek) -> None:
+    texts = [*greek["universities"].values(), *greek["campuses"].values()]
+    texts += list(greek["departments"].values())
+    for h in greek["transit_hubs"].values():
+        texts += [h["name"], h["serves"]]
+    for n in greek["neighborhoods"].values():
+        texts += [n["description"], *n["pros"], *n["cons"]]
+    for t in texts:
+        assert has_greek(t), f"not Greek: {t!r}"
+        assert not mixed_script(t), f"mixed Latin/Greek letters: {t!r}"

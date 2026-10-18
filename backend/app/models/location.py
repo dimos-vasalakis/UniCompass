@@ -41,6 +41,7 @@ class University(Base):
     slug: Mapped[str] = mapped_column(Text, unique=True)
     name: Mapped[str] = mapped_column(Text)
     short_name: Mapped[str] = mapped_column(Text)
+    name_el: Mapped[str | None] = mapped_column(Text)
     city_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("cities.id", ondelete="CASCADE")
     )
@@ -55,6 +56,7 @@ class Campus(Base):
         UUID(as_uuid=True), ForeignKey("universities.id", ondelete="CASCADE")
     )
     name: Mapped[str] = mapped_column(Text)
+    name_el: Mapped[str | None] = mapped_column(Text)
     lat: Mapped[float] = mapped_column(Float)
     lng: Mapped[float] = mapped_column(Float)
 
@@ -71,6 +73,7 @@ class Department(Base):
         UUID(as_uuid=True), ForeignKey("campuses.id", ondelete="CASCADE")
     )
     name: Mapped[str] = mapped_column(Text)
+    name_el: Mapped[str | None] = mapped_column(Text)
 
 
 class Neighborhood(Base):
@@ -87,6 +90,7 @@ class Neighborhood(Base):
     lat: Mapped[float] = mapped_column(Float)
     lng: Mapped[float] = mapped_column(Float)
     description: Mapped[str] = mapped_column(Text)
+    description_el: Mapped[str | None] = mapped_column(Text)
     typical_studio_rent: Mapped[int] = mapped_column(SmallInteger)
     # 1–5, higher is better for the student.
     safety: Mapped[int] = mapped_column(SmallInteger)
@@ -95,7 +99,7 @@ class Neighborhood(Base):
     green: Mapped[int] = mapped_column(SmallInteger)
     amenities: Mapped[int] = mapped_column(SmallInteger)
     student_life: Mapped[int] = mapped_column(SmallInteger)
-    # [{"text": "...", "factor": "safety" | "rent" | ... | null}]
+    # [{"text": "...", "text_el": "...", "factor": "safety" | "rent" | ... | null}]
     pros: Mapped[list[dict[str, Any]]] = mapped_column(
         JSONB, server_default=text("'[]'::jsonb")
     )
@@ -121,6 +125,8 @@ class TransitHub(Base):
     name: Mapped[str] = mapped_column(Text)
     kind: Mapped[str] = mapped_column(Text)
     serves: Mapped[str] = mapped_column(Text)
+    name_el: Mapped[str | None] = mapped_column(Text)
+    serves_el: Mapped[str | None] = mapped_column(Text)
     lat: Mapped[float] = mapped_column(Float)
     lng: Mapped[float] = mapped_column(Float)
 

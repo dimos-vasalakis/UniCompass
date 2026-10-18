@@ -40,12 +40,18 @@ def upsert(session: Session, model, rows: list[dict], key: list[str]) -> None:
     session.execute(stmt.on_conflict_do_update(index_elements=key, set_=update_cols))
 
 
+def with_greek(points: list[dict], greek: list[str]) -> list[dict]:
+    """Add each pro/con's Greek text next to the English (same order)."""
+    return [{**p, "text_el": t} for p, t in zip(points, greek, strict=True)]
+
+
 def ids_by_slug(session: Session, model) -> dict[str, object]:
     return dict(session.execute(select(model.slug, model.id)).all())
 
 
 def seed(city_slug: str) -> None:
     data = json.loads((DATA_DIR / f"{city_slug}.json").read_text())
+    el = json.loads((DATA_DIR / f"{city_slug}.el.json").read_text())
     engine = create_engine(sqlalchemy_url(get_settings().direct_url))
 
     with Session(engine) as session, session.begin():
@@ -55,7 +61,10 @@ def seed(city_slug: str) -> None:
         upsert(
             session,
             University,
-            [{**u, "city_id": city_id} for u in data["universities"]],
+            [
+                {**u, "city_id": city_id, "name_el": el["universities"][u["slug"]]}
+                for u in data["universities"]
+            ],
             ["slug"],
         )
         uni_ids = ids_by_slug(session, University)
@@ -68,6 +77,7 @@ def seed(city_slug: str) -> None:
                     "slug": c["slug"],
                     "university_id": uni_ids[c["university"]],
                     "name": c["name"],
+                    "name_el": el["campuses"][c["slug"]],
                     "lat": c["lat"],
                     "lng": c["lng"],
                 }
@@ -85,6 +95,7 @@ def seed(city_slug: str) -> None:
                     "university_id": uni_ids[c["university"]],
                     "campus_id": campus_ids[c["slug"]],
                     "name": name,
+                    "name_el": el["departments"][name],
                 }
                 for c in data["campuses"]
                 for name in c["departments"]
@@ -108,7 +119,15 @@ def seed(city_slug: str) -> None:
         upsert(
             session,
             TransitHub,
-            [{**h, "city_id": city_id} for h in data["transit_hubs"]],
+            [
+                {
+                    **h,
+                    "city_id": city_id,
+                    "name_el": el["transit_hubs"][h["slug"]]["name"],
+                    "serves_el": el["transit_hubs"][h["slug"]]["serves"],
+                }
+                for h in data["transit_hubs"]
+            ],
             ["slug"],
         )
         hub_ids = ids_by_slug(session, TransitHub)
@@ -121,6 +140,13 @@ def seed(city_slug: str) -> None:
                     **{k: v for k, v in n.items() if k != "scores"},
                     **n["scores"],
                     "city_id": city_id,
+                    "description_el": el["neighborhoods"][n["slug"]]["description"],
+                    "pros": with_greek(
+                        n["pros"], el["neighborhoods"][n["slug"]]["pros"]
+                    ),
+                    "cons": with_greek(
+                        n["cons"], el["neighborhoods"][n["slug"]]["cons"]
+                    ),
                 }
                 for n in data["neighborhoods"]
             ],

@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { render } from "@/test/utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthForm } from "./AuthForm";
 
@@ -59,5 +60,18 @@ describe("AuthForm sign-in", () => {
     search = "next=//evil.example";
     render(<AuthForm mode="signin" configured />);
     expect(screen.getByRole("link", { name: "Create an account" })).toHaveAttribute("href", "/signup");
+  });
+});
+
+describe("AuthForm in Greek", () => {
+  it("shows Greek copy and keeps the same behaviour", async () => {
+    signInWithOtp.mockResolvedValue({ error: null });
+    render(<AuthForm mode="signin" configured />, { locale: "el" });
+    expect(screen.getByRole("heading", { name: "Καλώς ήρθες ξανά" })).toBeInTheDocument();
+
+    await userEvent.type(screen.getByPlaceholderText("you@example.com"), "a@b.gr");
+    await userEvent.click(screen.getByRole("button", { name: "Στείλε μου σύνδεσμο σύνδεσης" }));
+    expect(screen.getByText("Έλεγξε το email σου")).toBeInTheDocument();
+    expect(screen.getByText("a@b.gr")).toBeInTheDocument();
   });
 });

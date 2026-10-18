@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AreaMap, { type MapPoint } from "@/components/Map";
 import { ProsCons } from "@/components/ProsCons";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import { canteenLabel, walkLabel } from "@/lib/dailyLife";
-import { FACTOR_BY_KEY, FACTORS, HUB_KIND_LABELS } from "@/lib/factors";
+import { FACTOR_KEYS } from "@/lib/factors";
+import { useDict, useLocale } from "@/lib/i18n/client";
+import { areaNames, fmt, type Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/en";
 import type { Factor, Hub, MatchArea, MatchRequest, MatchResponse, University } from "@/types";
 
 const PENDING_KEY = "unicompass:pending-match";
-const IMPORTANCE = ["Don't care", "A little", "Somewhat", "Important", "Very important", "Must have"];
 const DEFAULT_WEIGHTS: Record<Factor, number> = {
   commute: 4,
   rent: 3,
@@ -30,6 +32,8 @@ type Step = 1 | 2 | 3;
 
 export default function MatchFlow({ universities, hubs }: { universities: University[]; hubs: Hub[] }) {
   const router = useRouter();
+  const locale = useLocale();
+  const d = useDict();
   const [step, setStep] = useState<Step>(1);
   const [uniSlug, setUniSlug] = useState<string | null>(null);
   const [deptId, setDeptId] = useState<string>("");
@@ -57,20 +61,22 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
       }
     : null;
 
-  async function runMatch(req: MatchRequest) {
+  async function runMatch(req: MatchRequest, { translate = false } = {}) {
     setLoading(true);
     setError(null);
-    setSaved(false);
+    if (!translate) setSaved(false);
     try {
-      const res = await apiFetch<MatchResponse>("/match", {
+      const res = await apiFetch<MatchResponse>(`/match?lang=${locale}`, {
         method: "POST",
         body: JSON.stringify(req),
       });
       setResponse(res);
-      setStep(3);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (!translate) {
+        setStep(3);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     } catch {
-      setError("Something went wrong while finding your areas. Please try again.");
+      setError(d.match.errorFind);
     } finally {
       setLoading(false);
     }
@@ -79,7 +85,7 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
   async function save() {
     if (!request) return;
     try {
-      await apiFetch("/match/save", { method: "POST", body: JSON.stringify(request) });
+      await apiFetch(`/match/save?lang=${locale}`, { method: "POST", body: JSON.stringify(request) });
       setSaved(true);
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) {
@@ -89,10 +95,20 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
         } catch {}
         router.push("/login?next=/match");
       } else {
-        setError("Couldn't save your results. Please try again.");
+        setError(d.match.errorSave);
       }
     }
   }
+
+  // Switching language with results on screen: fetch the same results in the new language.
+  const shownLocale = useRef(locale);
+  useEffect(() => {
+    if (shownLocale.current === locale) return;
+    shownLocale.current = locale;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- refetches results from the API in the new language
+    if (response && request) void runMatch(request, { translate: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only a language change should refetch
+  }, [locale]);
 
   // Restore a search the user started before being sent to log in.
   useEffect(() => {
@@ -115,15 +131,16 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
     setMaxCommute(r.max_commute);
     /* eslint-enable react-hooks/set-state-in-effect */
     void runMatch(r);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on mount
   }, []);
 
   return (
     <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
-      <Stepper step={step} onStep={(s) => s < step && setStep(s)} />
+      <Stepper labels={d.match.steps} step={step} onStep={(s) => s < step && setStep(s)} />
 
       {step === 1 && (
         <section className="mt-8 space-y-6">
-          <h1 className="text-2xl font-semibold sm:text-3xl">Where will you study?</h1>
+          <h1 className="text-2xl font-semibold sm:text-3xl">{d.match.whereTitle}</h1>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {universities.map((u) => (
               <button
@@ -147,13 +164,13 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
 
           {uni && (
             <label className="block space-y-2">
-              <span className="font-medium">Department</span>
+              <span className="font-medium">{d.match.department}</span>
               <select
                 value={deptId}
                 onChange={(e) => setDeptId(e.target.value)}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2.5 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
               >
-                <option value="">Choose your department…</option>
+                <option value="">{d.match.chooseDepartment}</option>
                 {uni.campuses.map((c) => (
                   <optgroup key={c.slug} label={c.name}>
                     {uni.departments
@@ -166,40 +183,41 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
                   </optgroup>
                 ))}
               </select>
-              {campus && <span className="block text-sm text-muted">Classes at: {campus.name}</span>}
+              {campus && <span className="block text-sm text-muted">{fmt(d.match.classesAt, { campus: campus.name })}</span>}
             </label>
           )}
 
-          <NavButtons next={{ label: "Next: your priorities", disabled: !deptId, onClick: () => setStep(2) }} />
+          <NavButtons next={{ label: d.match.nextPriorities, disabled: !deptId, onClick: () => setStep(2) }} />
         </section>
       )}
 
       {step === 2 && (
         <section className="mt-8 space-y-8">
           <div>
-            <h1 className="text-2xl font-semibold sm:text-3xl">What matters to you?</h1>
-            <p className="mt-1 text-muted">Every area has trade-offs. Tell us what you care about most.</p>
+            <h1 className="text-2xl font-semibold sm:text-3xl">{d.match.mattersTitle}</h1>
+            <p className="mt-1 text-muted">{d.match.mattersSub}</p>
           </div>
 
           <div className="grid gap-x-10 gap-y-6 md:grid-cols-2">
-            {FACTORS.filter((f) => f.key !== "home").map((f) => (
+            {FACTOR_KEYS.filter((k) => k !== "home").map((k) => (
               <Slider
-                key={f.key}
-                label={f.label}
-                hint={f.hint}
-                value={weights[f.key]}
-                onChange={(v) => setWeights({ ...weights, [f.key]: v })}
+                key={k}
+                label={d.factors[k].label}
+                hint={d.factors[k].hint}
+                levels={d.match.importance}
+                value={weights[k]}
+                onChange={(v) => setWeights({ ...weights, [k]: v })}
               />
             ))}
           </div>
 
           <div className="space-y-4 rounded-lg border border-border p-4">
             <div>
-              <h2 className="font-semibold">Getting home</h2>
-              <p className="text-sm text-muted">How do you usually travel home to your family?</p>
+              <h2 className="font-semibold">{d.match.gettingHome}</h2>
+              <p className="text-sm text-muted">{d.match.gettingHomeSub}</p>
             </div>
             <select
-              aria-label="How you travel home"
+              aria-label={d.match.howYouTravelHome}
               value={hubSlug ?? ""}
               onChange={(e) => {
                 const v = e.target.value || null;
@@ -208,17 +226,18 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
               }}
               className="w-full rounded-lg border border-border bg-background px-3 py-2.5 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
             >
-              <option value="">I don&apos;t need this / I&apos;m from Attica</option>
+              <option value="">{d.match.noHomeNeeded}</option>
               {hubs.map((h) => (
                 <option key={h.slug} value={h.slug}>
-                  {HUB_KIND_LABELS[h.kind]}: {h.name} ({h.serves})
+                  {d.hubKinds[h.kind]}: {h.name} ({h.serves})
                 </option>
               ))}
             </select>
             {hub && (
               <Slider
-                label={`Being close to ${hub.name}`}
-                hint="Matters more if you go home often"
+                label={fmt(d.match.closeTo, { hub: hub.name })}
+                hint={d.match.closeToHint}
+                levels={d.match.importance}
                 value={weights.home}
                 onChange={(v) => setWeights({ ...weights, home: v })}
               />
@@ -227,26 +246,29 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
 
           <div className="grid gap-4 sm:grid-cols-2">
             <LimitSelect
-              label="Maximum rent (studio)"
+              label={d.match.maxRent}
+              noLimit={d.match.noLimit}
               value={maxRent}
               options={RENT_LIMITS}
-              format={(v) => `up to €${v}/month`}
+              format={(v) => fmt(d.match.upToRent, { n: v })}
               onChange={setMaxRent}
             />
             <LimitSelect
-              label="Maximum commute"
+              label={d.match.maxCommute}
+              noLimit={d.match.noLimit}
               value={maxCommute}
               options={COMMUTE_LIMITS}
-              format={(v) => `up to ${v} min`}
+              format={(v) => fmt(d.match.upToCommute, { n: v })}
               onChange={setMaxCommute}
             />
           </div>
 
           {error && <p className="text-sm text-danger">{error}</p>}
           <NavButtons
+            backLabel={d.common.back}
             back={() => setStep(1)}
             next={{
-              label: loading ? "Finding your areas…" : "Find my 3 best areas",
+              label: loading ? d.match.finding : d.match.findAreas,
               disabled: loading || !request,
               onClick: () => request && runMatch(request),
             }}
@@ -256,6 +278,8 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
 
       {step === 3 && response && (
         <Results
+          d={d}
+          locale={locale}
           response={response}
           campusPoint={campus}
           hub={hub}
@@ -271,8 +295,7 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
   );
 }
 
-function Stepper({ step, onStep }: { step: Step; onStep: (s: Step) => void }) {
-  const labels = ["Where you study", "Your priorities", "Your best areas"];
+function Stepper({ labels, step, onStep }: { labels: string[]; step: Step; onStep: (s: Step) => void }) {
   return (
     <ol className="flex gap-2 text-sm">
       {labels.map((label, i) => {
@@ -302,11 +325,13 @@ function Stepper({ step, onStep }: { step: Step; onStep: (s: Step) => void }) {
 function Slider({
   label,
   hint,
+  levels,
   value,
   onChange,
 }: {
   label: string;
   hint: string;
+  levels: string[];
   value: number;
   onChange: (v: number) => void;
 }) {
@@ -315,7 +340,7 @@ function Slider({
       <div className="flex items-baseline justify-between gap-2">
         <span className="font-medium">{label}</span>
         <span className={`text-sm ${value >= 4 ? "font-semibold text-brand" : "text-muted"}`}>
-          {IMPORTANCE[value]}
+          {levels[value]}
         </span>
       </div>
       <input
@@ -334,12 +359,14 @@ function Slider({
 
 function LimitSelect({
   label,
+  noLimit,
   value,
   options,
   format,
   onChange,
 }: {
   label: string;
+  noLimit: string;
   value: number | null;
   options: number[];
   format: (v: number) => string;
@@ -353,7 +380,7 @@ function LimitSelect({
         onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
         className="w-full rounded-lg border border-border bg-background px-3 py-2.5 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
       >
-        <option value="">No limit</option>
+        <option value="">{noLimit}</option>
         {options.map((o) => (
           <option key={o} value={o}>
             {format(o)}
@@ -366,16 +393,18 @@ function LimitSelect({
 
 function NavButtons({
   back,
+  backLabel,
   next,
 }: {
   back?: () => void;
+  backLabel?: string;
   next: { label: string; disabled?: boolean; onClick: () => void };
 }) {
   return (
     <div className="flex justify-between gap-3 pt-2">
       {back ? (
         <button type="button" onClick={back} className="rounded-lg px-4 py-2.5 font-medium text-muted hover:text-foreground">
-          ← Back
+          {backLabel}
         </button>
       ) : (
         <span />
@@ -393,6 +422,8 @@ function NavButtons({
 }
 
 function Results({
+  d,
+  locale,
   response,
   campusPoint,
   hub,
@@ -403,6 +434,8 @@ function Results({
   saved,
   error,
 }: {
+  d: Dictionary;
+  locale: Locale;
   response: MatchResponse;
   campusPoint: { name: string; lat: number; lng: number } | null;
   hub: Hub | null;
@@ -417,27 +450,27 @@ function Results({
   const points = useMemo<MapPoint[]>(() => {
     const p: MapPoint[] = results.map((r, i) => ({
       key: r.slug,
-      label: `${i + 1}. ${r.name}`,
+      label: `${i + 1}. ${areaNames(locale, r)[0]}`,
       lat: r.lat,
       lng: r.lng,
       kind: "area",
       badge: String(i + 1),
     }));
     if (campusPoint) {
-      p.push({ key: "campus", label: `Your campus: ${campusPoint.name}`, ...campusPoint, kind: "campus", badge: "🎓" });
+      p.push({ key: "campus", label: fmt(d.match.yourCampus, { name: campusPoint.name }), ...campusPoint, kind: "campus", badge: "🎓" });
     }
     if (hub) p.push({ key: "hub", label: hub.name, lat: hub.lat, lng: hub.lng, kind: "hub", badge: "⌂" });
     return p;
-  }, [results, campusPoint, hub]);
+  }, [results, campusPoint, hub, d, locale]);
 
   return (
     <section className="mt-8 space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold sm:text-3xl">Your best areas</h1>
+          <h1 className="text-2xl font-semibold sm:text-3xl">{d.match.resultsTitle}</h1>
           <p className="mt-1 text-muted">
-            For {deptName} ({uniName}), out of {response.considered} areas in Athens
-            {response.within_limits < response.considered && `, ${response.within_limits} within your limits`}.
+            {fmt(d.match.resultsFor, { dept: deptName, uni: uniName, n: response.considered })}
+            {response.within_limits < response.considered && fmt(d.match.withinLimits, { n: response.within_limits })}.
           </p>
         </div>
         <div className="flex gap-2">
@@ -446,7 +479,7 @@ function Results({
             onClick={onAdjust}
             className="rounded-lg border border-brand px-4 py-2 font-medium text-brand hover:bg-brand-light"
           >
-            Adjust priorities
+            {d.match.adjust}
           </button>
           {results.length > 0 && (
             <button
@@ -455,7 +488,7 @@ function Results({
               disabled={saved}
               className="rounded-lg bg-brand px-4 py-2 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
             >
-              {saved ? "Saved ✓" : "Save"}
+              {saved ? d.match.saved : d.match.save}
             </button>
           )}
         </div>
@@ -464,14 +497,14 @@ function Results({
 
       {results.length === 0 ? (
         <div className="rounded-lg border border-border bg-brand-light p-6">
-          <p className="font-medium">No area fits all your limits.</p>
-          <p className="mt-1 text-muted">Try raising your maximum rent or commute.</p>
+          <p className="font-medium">{d.match.noFitTitle}</p>
+          <p className="mt-1 text-muted">{d.match.noFitHint}</p>
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
           <ol className="space-y-4">
             {results.map((r, i) => (
-              <ResultCard key={r.slug} area={r} rank={i + 1} hub={hub} />
+              <ResultCard key={r.slug} d={d} locale={locale} area={r} rank={i + 1} hub={hub} />
             ))}
           </ol>
           <div className="lg:sticky lg:top-6">
@@ -479,7 +512,9 @@ function Results({
               <AreaMap points={points} />
             </div>
             <p className="mt-2 text-xs text-muted">
-              1–3: your areas · 🎓 your campus{hub ? ` · ⌂ ${hub.name}` : ""}. Tap a pin for its name.
+              {d.match.legend}
+              {hub ? fmt(d.match.legendHub, { hub: hub.name }) : ""}
+              {d.match.legendTail}
             </p>
           </div>
         </div>
@@ -488,26 +523,39 @@ function Results({
   );
 }
 
-function ResultCard({ area, rank, hub }: { area: MatchArea; rank: number; hub: Hub | null }) {
+function ResultCard({
+  d,
+  locale,
+  area,
+  rank,
+  hub,
+}: {
+  d: Dictionary;
+  locale: Locale;
+  area: MatchArea;
+  rank: number;
+  hub: Hub | null;
+}) {
+  const [name, altName] = areaNames(locale, area);
   return (
     <li className="rounded-xl border border-border p-5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-sm font-medium text-muted">#{rank}</div>
           <h2 className="text-xl font-semibold">
-            {area.name} <span className="font-normal text-muted">· {area.name_el}</span>
+            {name} <span className="font-normal text-muted">· {altName}</span>
           </h2>
         </div>
         <div className="shrink-0 whitespace-nowrap rounded-full bg-brand px-3 py-1 text-sm font-semibold text-white">
-          {area.match}% match
+          {fmt(d.match.matchPercent, { n: area.match })}
         </div>
       </div>
 
       {area.drivers.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
-          {area.drivers.map((d) => (
-            <span key={d} className="rounded-full bg-accent/25 px-2.5 py-0.5 text-sm font-medium">
-              {FACTOR_BY_KEY[d].driver}
+          {area.drivers.map((driver) => (
+            <span key={driver} className="rounded-full bg-accent/25 px-2.5 py-0.5 text-sm font-medium">
+              {d.factors[driver].driver}
             </span>
           ))}
         </div>
@@ -516,10 +564,16 @@ function ResultCard({ area, rank, hub }: { area: MatchArea; rank: number; hub: H
       <p className="mt-3 text-sm text-muted">{area.description}</p>
 
       <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-        <Stat label="Studio rent" value={`~€${area.typical_studio_rent}/mo`} />
-        <Stat label="To campus" value={`${area.commute_estimated ? "~" : ""}${area.commute_minutes} min`} />
+        <Stat label={d.match.studioRent} value={fmt(d.match.perMonth, { n: area.typical_studio_rent })} />
+        <Stat
+          label={d.match.toCampus}
+          value={`${area.commute_estimated ? "~" : ""}${fmt(d.match.minutes, { n: area.commute_minutes })}`}
+        />
         {hub && area.home_minutes != null && (
-          <Stat label={`To ${hub.name}`} value={`${area.home_estimated ? "~" : ""}${area.home_minutes} min`} />
+          <Stat
+            label={fmt(d.match.toHub, { hub: hub.name })}
+            value={`${area.home_estimated ? "~" : ""}${fmt(d.match.minutes, { n: area.home_minutes })}`}
+          />
         )}
       </dl>
 
@@ -528,18 +582,18 @@ function ResultCard({ area, rank, hub }: { area: MatchArea; rank: number; hub: H
           {area.daily_life.nearby_loaded && (
             <>
               <Stat
-                label="Nearest supermarket"
-                value={area.daily_life.supermarket ? walkLabel(area.daily_life.supermarket) : "None close by"}
+                label={d.daily.nearestSupermarket}
+                value={area.daily_life.supermarket ? walkLabel(d, area.daily_life.supermarket) : d.daily.noneClose}
               />
               <Stat
-                label="Nearest gym"
-                value={area.daily_life.gym ? walkLabel(area.daily_life.gym) : "None close by"}
+                label={d.daily.nearestGym}
+                value={area.daily_life.gym ? walkLabel(d, area.daily_life.gym) : d.daily.noneClose}
               />
             </>
           )}
           <Stat
-            label="Student restaurant (λέσχη)"
-            value={area.daily_life.canteen ? canteenLabel(area.daily_life.canteen) : "—"}
+            label={d.daily.canteenTile}
+            value={area.daily_life.canteen ? canteenLabel(d, area.daily_life.canteen) : "—"}
           />
         </dl>
       )}
@@ -549,7 +603,7 @@ function ResultCard({ area, rank, hub }: { area: MatchArea; rank: number; hub: H
       </div>
 
       <Link href={`/neighborhoods/${area.slug}`} className="mt-4 inline-block font-medium text-brand hover:underline">
-        Full guide to {area.name} →
+        {fmt(d.match.fullGuide, { name })}
       </Link>
     </li>
   );

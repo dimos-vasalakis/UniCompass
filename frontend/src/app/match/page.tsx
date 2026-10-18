@@ -3,19 +3,21 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { ApiUnavailable, NoAreaData } from "@/components/ApiUnavailable";
 import { tryGetPublic } from "@/lib/api/server";
+import { getDictionary, getLocale } from "@/lib/i18n/server";
 import type { Hub, University } from "@/types";
 import MatchFlow from "./MatchFlow";
 
-export const metadata: Metadata = {
-  title: "Find your area in Athens · UniCompass",
-  description: "Tell us what matters to you and get the 3 Athens neighborhoods that fit you best.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const d = (await getDictionary()).meta;
+  return { title: d.matchTitle, description: d.matchDescription };
+}
 
 async function MatchLoader() {
   await connection();
+  const locale = await getLocale();
   const [universities, hubs] = await Promise.all([
-    tryGetPublic<University[]>("/universities"),
-    tryGetPublic<Hub[]>("/hubs"),
+    tryGetPublic<University[]>(`/universities?lang=${locale}`),
+    tryGetPublic<Hub[]>(`/hubs?lang=${locale}`),
   ]);
   if (!universities || !hubs || !universities.length) {
     return (
