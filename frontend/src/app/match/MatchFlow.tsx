@@ -522,13 +522,10 @@ function Results({
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-          <ol className="space-y-4">
-            {results.map((r, i) => (
-              <ResultCard key={r.slug} d={d} locale={locale} area={r} rank={i + 1} hub={hub} />
-            ))}
-          </ol>
-          <div className="lg:sticky lg:top-6">
-            <div className="h-80 lg:h-[520px]">
+          {/* On a phone the single column would bury the map under all the cards, so it comes first in the DOM too (focus order
+             matches what you see); on desktop it moves to the right-hand column. */}
+          <div className="lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1">
+            <div className="h-72 lg:h-[520px]">
               <AreaMap points={points} />
             </div>
             <p className="mt-2 text-xs text-muted">
@@ -538,6 +535,11 @@ function Results({
               {d.match.legendTail}
             </p>
           </div>
+          <ol className="space-y-4 lg:col-start-1 lg:row-start-1">
+            {results.map((r, i) => (
+              <ResultCard key={r.slug} d={d} locale={locale} area={r} rank={i + 1} hub={hub} />
+            ))}
+          </ol>
         </div>
       )}
     </section>
