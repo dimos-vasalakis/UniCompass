@@ -5,6 +5,7 @@ Helps students who passed the Panhellenic exams settle into their new university
 | Layer     | Tech                         | Hosting  |
 | --------- | ---------------------------- | -------- |
 | Frontend  | Next.js 16 (App Router)      | Vercel   |
+| Mobile    | Expo SDK 58 (Expo Router)    | EAS      |
 | Backend   | FastAPI (async, Python 3.12) | Render   |
 | DB + Auth | Supabase (Postgres)          | Supabase |
 | Payments  | Stripe (one-time Checkout)   |          |
@@ -31,9 +32,15 @@ cd frontend
 cp .env.example .env.local
 npm install
 npm run dev
+
+# Mobile: Expo (scan the QR code with Expo Go)
+cd mobile
+cp .env.example .env.local   # Supabase URL + anon key; API URL must be reachable from the phone
+npm install
+npx expo start
 ```
 
-Everything defaults to empty, so both apps boot without secrets. Public pages work without Supabase Auth, and the API works without Upstash. Endpoints that need the database return `503 Database unavailable` until `DATABASE_URL` is set.
+Everything defaults to empty, so the web apps boot without secrets. Public pages work without Supabase Auth, and the API works without Upstash. Endpoints that need the database return `503 Database unavailable` until `DATABASE_URL` is set.
 
 ## Configuration
 
@@ -73,9 +80,17 @@ Database URL gotchas:
 - The direct connection is IPv6-only unless you buy Supabase's IPv4 add-on. If Alembic can't connect, use the **session pooler** URI (pooler host, port `5432`) as `DIRECT_URL`.
 - Stick to letters and digits in the database password. Characters like `@ # / ?` would need URL-encoding.
 
+**`mobile/.env.local`** (not committed; Expo only exposes `EXPO_PUBLIC_*`)
+
+| Variable | Notes |
+| --- | --- |
+| `EXPO_PUBLIC_SUPABASE_URL` | same project as the frontend |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | same anon key as the frontend |
+| `EXPO_PUBLIC_API_URL` | backend URL; use your Render URL on a real phone, since `localhost` isn't reachable from it |
+
 ### Supabase dashboard
 
-1. **Authentication → URL Configuration.** Set the Site URL to your production URL. Add `http://localhost:3000/auth/callback` and `https://<your-site>/auth/callback` to Redirect URLs.
+1. **Authentication → URL Configuration.** Set the Site URL to your production URL. Add `http://localhost:3000/auth/callback` and `https://<your-site>/auth/callback` to Redirect URLs. For the mobile app also add `unicompass://auth/callback` (and `exp://**` while testing in Expo Go).
 2. **Authentication → Sign In / Providers.**
    - Email: on, with "Allow new users to sign up" enabled. `/signup` creates accounts through the magic link.
    - Google: create an OAuth client in Google Cloud Console → APIs & Services → Credentials (Web application).
@@ -114,9 +129,22 @@ Fill in the environment variables above. Run `alembic upgrade head`, `python -m 
 stripe listen --forward-to localhost:8000/api/v1/billing/webhook
 ```
 
+## Mobile app
+
+`mobile/` is a standalone Expo app (not an npm workspace) that talks to the same backend and Supabase project. Auth uses `supabase-js` with PKCE: Google/GitHub open a browser session and return through the `unicompass://auth/callback` deep link, and the magic link comes back the same way. `src/lib/api.ts` mirrors the web `apiFetch` (Bearer token). The UI is React Native, so screens are built separately from the web components.
+
+```bash
+cd mobile
+npx expo start         # dev server; Expo Go on a phone
+npm run lint && npm run typecheck
+npx eas-cli@latest build --profile preview   # installable internal build (needs `eas login`)
+```
+
+Build profiles are in `mobile/eas.json`; the EAS project ID is in `mobile/app.json`. Store releases need an Apple Developer account and a Google Play Console account. Premium payments are not wired into the app yet (Apple/Google require in-app purchase for digital goods), so premium stays web-only for now.
+
 ## Tests
 
-CI (`.github/workflows/ci.yml`) runs everything on each push to `main` and on each PR: backend lint, migrations, seed and pytest; frontend lint, typecheck, Vitest and build; then Playwright end-to-end tests on desktop and phone.
+CI (`.github/workflows/ci.yml`) runs everything on each push to `main` and on each PR: backend lint, migrations, seed and pytest; mobile lint and typecheck; frontend lint, typecheck, Vitest and build; then Playwright end-to-end tests on desktop and phone.
 
 **Backend**
 
@@ -195,6 +223,7 @@ frontend/                 Next.js app
   src/lib/api/            fetch helpers for the backend
   src/proxy.ts            session refresh + protected routes
   e2e/                    Playwright tests
+mobile/                    Expo app (src/app routes, src/lib Supabase + API client)
 backend/                  FastAPI app
   app/api/v1/endpoints/   health, users, billing (+ Stripe webhook), places, match
   app/core/               settings, DB engine, JWT verification
