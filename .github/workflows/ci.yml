@@ -63,6 +63,23 @@ jobs:
       - name: Tests
         run: pytest -q
 
+  mobile:
+    name: Mobile (lint, types)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+
   frontend:
     name: Frontend (lint, types, unit tests, build)
     runs-on: ubuntu-latest

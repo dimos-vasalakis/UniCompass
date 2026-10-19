@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-UniCompass helps students who passed the Greek Panhellenic exams move to their new university city. Monorepo: `frontend/` (Next.js, Vercel), `backend/` (FastAPI, Render via `render.yaml`), `backend/alembic/` (Postgres schema + RLS via Alembic). Stripe for payments, Resend for email, Upstash Redis for cache.
+UniCompass helps students who passed the Greek Panhellenic exams move to their new university city. Monorepo: `frontend/` (Next.js, Vercel), `mobile/` (Expo SDK 58 + Expo Router, EAS builds; standalone package, env in `mobile/.env.local` as `EXPO_PUBLIC_*`, Supabase auth via the `unicompass://auth/callback` deep link, see `mobile/AGENTS.md`), `backend/` (FastAPI, Render via `render.yaml`), `backend/alembic/` (Postgres schema + RLS via Alembic). Stripe for payments, Resend for email, Upstash Redis for cache.
 
 ## Commands
 
