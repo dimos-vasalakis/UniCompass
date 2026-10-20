@@ -21,8 +21,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: "UniCompass", description: d.meta.siteDescription };
 }
 
-// Every visit starts in the light theme (the toggle only lasts until the page is closed or reloaded).
-const THEME_SCRIPT = `try{localStorage.removeItem("theme");document.documentElement.dataset.theme="light";var m=document.cookie.match(/(?:^|; )locale=(en|el)/);if(m)document.documentElement.lang=m[1]}catch(e){}`;
+// Every visit starts in the light theme; a choice made with the toggle lasts for the browser session (reloads keep it).
+const THEME_SCRIPT = `try{localStorage.removeItem("theme");var t=sessionStorage.getItem("theme");document.documentElement.dataset.theme=t==="dark"?"dark":"light";var m=document.cookie.match(/(?:^|; )locale=(en|el)/);if(m)document.documentElement.lang=m[1]}catch(e){}`;
 
 // The language comes from a cookie, so everything below it renders per request.
 async function LocaleShell({ children }: { children: React.ReactNode }) {
