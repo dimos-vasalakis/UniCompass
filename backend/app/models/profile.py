@@ -1,7 +1,16 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Text, func
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Text,
+    column,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -12,6 +21,8 @@ class Profile(Base):
     __tablename__ = "profiles"
     __table_args__ = (
         CheckConstraint("role in ('high_school', 'university')", name="role"),
+        CheckConstraint("username ~ '^[A-Za-z0-9_.-]{3,20}$'", name="username_format"),
+        Index("profiles_username_key", func.lower(column("username")), unique=True),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -21,6 +32,7 @@ class Profile(Base):
     )
     email: Mapped[str] = mapped_column(Text)
     full_name: Mapped[str | None] = mapped_column(Text)
+    username: Mapped[str | None] = mapped_column(Text)
     role: Mapped[str] = mapped_column(Text, server_default="high_school")
     is_premium: Mapped[bool] = mapped_column(Boolean, server_default="false")
     stripe_customer_id: Mapped[str | None] = mapped_column(Text)

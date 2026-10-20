@@ -5,7 +5,7 @@ import { getPrivate } from "@/lib/api/server";
 import { areaNames, fmt } from "@/lib/i18n/config";
 import { getDictionary, getLocale } from "@/lib/i18n/server";
 import { getAccessToken, getUser } from "@/lib/supabase/server";
-import type { SavedMatch } from "@/types";
+import type { Profile, SavedMatch } from "@/types";
 
 async function Dashboard() {
   const d = (await getDictionary()).dashboard;
@@ -14,6 +14,7 @@ async function Dashboard() {
   if (!user) redirect("/login?next=/dashboard");
 
   const token = await getAccessToken();
+  let name = user.email ?? "";
   let saved: SavedMatch[] = [];
   let savedError = false;
   if (token) {
@@ -22,11 +23,17 @@ async function Dashboard() {
     } catch {
       savedError = true;
     }
+    try {
+      const me = await getPrivate<Profile>("/users/me", token);
+      name = me.username ?? me.full_name ?? name;
+    } catch {
+      // keep the email fallback
+    }
   }
 
   return (
     <>
-      <h1 className="text-2xl font-semibold">{fmt(d.welcome, { email: user.email ?? "" })}</h1>
+      <h1 className="text-2xl font-semibold">{fmt(d.welcome, { name })}</h1>
       <section className="mt-8">
         <h2 className="text-xl font-semibold">{d.saved}</h2>
         {savedError ? (

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from sqlalchemy.exc import IntegrityError
 
 from app.core.db import DbSession
 from app.core.security import CurrentUserDep
@@ -34,6 +35,10 @@ async def update_me(
 
     for field, value in body.model_dump(exclude_none=True).items():
         setattr(row, field, value)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(409, "Username already taken") from None
     await cache_delete(f"profile:{user.id}")
     return Profile.model_validate(row)
