@@ -82,3 +82,13 @@ test("area page has a map with the area and its metro station", async ({ page })
   await station.dispatchEvent("click");
   await expect(page.locator(".leaflet-overlay-pane path").first()).toBeVisible();
 });
+
+test("every visit starts in the light theme, even after choosing dark", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.getByRole("button", { name: "Switch to dark mode" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+});

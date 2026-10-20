@@ -41,6 +41,9 @@ test("match flow runs in Greek, and switching language translates the results", 
   await page.getByRole("combobox").selectOption({ label: "Ηλεκτρολόγων Μηχανικών και Μηχανικών Υπολογιστών" });
   await page.getByRole("button", { name: /Επόμενο: οι προτεραιότητές σου/ }).click();
   await expect(page.getByRole("heading", { name: "Τι σε νοιάζει;" })).toBeVisible();
+  // Sliders all start in the middle, so say what matters.
+  await page.getByLabel(/^Γρήγορη διαδρομή/).fill("5");
+  await page.getByLabel(/^Χαμηλό ενοίκιο/).fill("5");
   await page.getByRole("button", { name: "Βρες τις 3 καλύτερες περιοχές" }).click();
 
   const cards = page.locator("li").filter({ has: page.getByText(/% ταίριασμα/) });

@@ -15,7 +15,7 @@
   color-scheme: light;
 }
 
-/* Set by the inline script in layout.tsx (saved choice, else the OS setting). */
+/* Only set by the theme toggle: every visit starts light (see the inline script in layout.tsx). */
 :root[data-theme="dark"] {
   --background: #0f1713;
   --foreground: #e6efe9;

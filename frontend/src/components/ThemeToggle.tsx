@@ -18,11 +18,6 @@ export function ThemeToggle() {
   function toggle() {
     const next: Theme = theme === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
-    try {
-      localStorage.setItem("theme", next);
-    } catch {
-      // Storage blocked (private mode): the choice just won't persist.
-    }
     setTheme(next);
   }
 

@@ -14,15 +14,17 @@ import type { Dictionary } from "@/lib/i18n/en";
 import type { Factor, Hub, MatchArea, MatchRequest, MatchResponse, University } from "@/types";
 
 const PENDING_KEY = "unicompass:pending-match";
+// Every slider starts at the same middle value ("Somewhat"): the student decides what matters more.
+const NEUTRAL = 2;
 const DEFAULT_WEIGHTS: Record<Factor, number> = {
-  commute: 4,
-  rent: 3,
-  safety: 3,
-  quiet: 2,
-  nightlife: 2,
-  student_life: 2,
-  green: 1,
-  amenities: 2,
+  commute: NEUTRAL,
+  rent: NEUTRAL,
+  safety: NEUTRAL,
+  quiet: NEUTRAL,
+  nightlife: NEUTRAL,
+  student_life: NEUTRAL,
+  green: NEUTRAL,
+  amenities: NEUTRAL,
   home: 0,
 };
 const RENT_LIMITS = [400, 450, 500, 550, 600, 700];
@@ -222,7 +224,7 @@ export default function MatchFlow({ universities, hubs }: { universities: Univer
               onChange={(e) => {
                 const v = e.target.value || null;
                 setHubSlug(v);
-                if (v && weights.home === 0) setWeights({ ...weights, home: 3 });
+                if (v && weights.home === 0) setWeights({ ...weights, home: NEUTRAL });
               }}
               className="w-full rounded-lg border border-border bg-background px-3 py-2.5 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
             >
