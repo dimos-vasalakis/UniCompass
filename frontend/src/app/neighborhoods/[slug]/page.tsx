@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ProsCons } from "@/components/ProsCons";
+import { MetroCard } from "@/components/MetroCard";
 import { ScoreBar } from "@/components/ScoreBar";
 import { ApiUnavailable } from "@/components/ApiUnavailable";
 import { tryGetPublic } from "@/lib/api/server";
@@ -79,6 +80,8 @@ async function Area({ params }: { params: Promise<{ slug: string }> }) {
           <ScoreBar key={k} label={d.scores[k]} value={n.scores[k]} />
         ))}
       </section>
+
+      {n.metro && <MetroCard metro={n.metro} />}
 
       <section>
         <h2 className="mb-3 text-xl font-semibold">{d.daily.heading}</h2>

@@ -36,6 +36,9 @@ def test_neighborhood_detail(client: TestClient) -> None:
     body = res.json()
     assert body["pros"] and body["cons"]
     assert any(t["destination_slug"] == "ntua-zografou" for t in body["travel_times"])
+    metro = body["metro"]
+    assert metro["station"]["name"] and metro["lines"]
+    assert {l["color"] for l in metro["lines"]} <= {"green", "red", "blue"}
     # Nearest student restaurants come from athens.json, so they're always there.
     canteens = body["canteens"]
     assert canteens and len(canteens) <= 3

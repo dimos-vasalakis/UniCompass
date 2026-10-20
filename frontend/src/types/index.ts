@@ -83,11 +83,30 @@ export type DailyLife = {
   canteen: Canteen | null;
 };
 
+export type MetroLine = {
+  slug: string;
+  code: string;
+  color: "green" | "red" | "blue";
+  hex: string;
+  name: string;
+  from_station: string;
+  to_station: string;
+};
+
+export type Metro = {
+  station: { slug: string; name: string; lat: number; lng: number };
+  lines: MetroLine[];
+  distance_m: number;
+  walk_minutes: number;
+  in_area: boolean;
+};
+
 export type NeighborhoodDetail = NeighborhoodSummary & {
   description: string;
   pros: Point[];
   cons: Point[];
   sources: string[];
+  metro: Metro | null;
   travel_times: TravelTime[];
   nearby_loaded: boolean;
   supermarkets: NearbyPlace[];

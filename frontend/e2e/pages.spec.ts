@@ -61,3 +61,13 @@ test("switching to sign up keeps the email you typed", async ({ page }) => {
   await expect(page).toHaveURL(/next=%2Fmatch/);
   await expect(email).toHaveValue("maria@example.gr");
 });
+
+test("area page shows the metro station and reveals its lines on click", async ({ page }) => {
+  await page.goto("/neighborhoods/pagrati");
+  await expect(page.getByRole("heading", { name: "Metro", exact: true })).toBeVisible();
+  const station = page.locator("button[aria-controls]").filter({ hasText: /station/i });
+  await expect(station).toBeVisible();
+  await station.click();
+  await expect(page.getByRole("list", { name: /^Lines at / })).toBeVisible();
+  await expect(page.getByText(/line$/).first()).toBeVisible();
+});

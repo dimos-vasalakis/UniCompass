@@ -102,6 +102,16 @@ export const en = {
     notSure: "Not sure this is the right area for you?",
     notSureLink: "Get your 3 best areas based on what matters to you →",
   },
+  metro: {
+    heading: "Metro",
+    inArea: "Station in the area",
+    nearest: "No station in this area: nearest station",
+    walk: "{n} min walk ({m} m)",
+    linesAria: "Lines at {station}",
+    toggleShow: "Show lines",
+    toggleHide: "Hide lines",
+    direction: "{from} to {to}",
+  },
   daily: {
     heading: "Daily life nearby",
     supermarkets: "Supermarkets",

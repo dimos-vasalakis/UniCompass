@@ -1,0 +1,570 @@
+{
+ "city": "athens",
+ "lines": [
+  {
+   "slug": "m1",
+   "code": "M1",
+   "color": "green",
+   "hex": "#00a651",
+   "name": "Green line",
+   "name_el": "Πράσινη γραμμή",
+   "stations": [
+    "piraeus",
+    "faliro",
+    "moschato",
+    "kallithea",
+    "tavros",
+    "petralona",
+    "thissio",
+    "monastiraki",
+    "omonia",
+    "victoria",
+    "attiki",
+    "agios-nikolaos",
+    "kato-patissia",
+    "agios-eleftherios",
+    "ano-patissia",
+    "perissos",
+    "pefkakia",
+    "nea-ionia",
+    "iraklio",
+    "irini",
+    "neratziotissa",
+    "marousi",
+    "kat",
+    "kifisia"
+   ]
+  },
+  {
+   "slug": "m2",
+   "code": "M2",
+   "color": "red",
+   "hex": "#e31e24",
+   "name": "Red line",
+   "name_el": "Κόκκινη γραμμή",
+   "stations": [
+    "anthoupoli",
+    "peristeri",
+    "agios-antonios",
+    "sepolia",
+    "attiki",
+    "larissis",
+    "metaxourgeio",
+    "omonia",
+    "panepistimio",
+    "syntagma",
+    "akropoli",
+    "syngrou-fix",
+    "neos-kosmos",
+    "agios-ioannis",
+    "dafni",
+    "agios-dimitrios",
+    "ilioupoli",
+    "alimos",
+    "argyroupoli",
+    "elliniko"
+   ]
+  },
+  {
+   "slug": "m3",
+   "code": "M3",
+   "color": "blue",
+   "hex": "#0072bc",
+   "name": "Blue line",
+   "name_el": "Μπλε γραμμή",
+   "stations": [
+    "dimotiko-theatro",
+    "piraeus",
+    "maniatika",
+    "nikaia",
+    "korydallos",
+    "agia-varvara",
+    "agia-marina",
+    "egaleo",
+    "eleonas",
+    "kerameikos",
+    "monastiraki",
+    "syntagma",
+    "evangelismos",
+    "megaro-moussikis",
+    "ampelokipi",
+    "panormou",
+    "katehaki",
+    "ethniki-amyna",
+    "holargos",
+    "nomismatokopio",
+    "agia-paraskevi",
+    "halandri",
+    "doukissis-plakentias",
+    "pallini",
+    "paiania-kantza",
+    "koropi",
+    "airport"
+   ]
+  }
+ ],
+ "stations": [
+  {
+   "slug": "piraeus",
+   "name": "Piraeus",
+   "name_el": "Πειραιάς",
+   "lat": 37.9482,
+   "lng": 23.643
+  },
+  {
+   "slug": "faliro",
+   "name": "Faliro",
+   "name_el": "Φάληρο",
+   "lat": 37.945,
+   "lng": 23.665
+  },
+  {
+   "slug": "moschato",
+   "name": "Moschato",
+   "name_el": "Μοσχάτο",
+   "lat": 37.9553,
+   "lng": 23.6807
+  },
+  {
+   "slug": "kallithea",
+   "name": "Kallithea",
+   "name_el": "Καλλιθέα",
+   "lat": 37.9603,
+   "lng": 23.697
+  },
+  {
+   "slug": "tavros",
+   "name": "Tavros",
+   "name_el": "Ταύρος",
+   "lat": 37.9708,
+   "lng": 23.7059
+  },
+  {
+   "slug": "petralona",
+   "name": "Petralona",
+   "name_el": "Πετράλωνα",
+   "lat": 37.9686,
+   "lng": 23.7092
+  },
+  {
+   "slug": "thissio",
+   "name": "Thissio",
+   "name_el": "Θησείο",
+   "lat": 37.9768,
+   "lng": 23.7208
+  },
+  {
+   "slug": "monastiraki",
+   "name": "Monastiraki",
+   "name_el": "Μοναστηράκι",
+   "lat": 37.976,
+   "lng": 23.7258
+  },
+  {
+   "slug": "omonia",
+   "name": "Omonia",
+   "name_el": "Ομόνοια",
+   "lat": 37.9842,
+   "lng": 23.728
+  },
+  {
+   "slug": "victoria",
+   "name": "Victoria",
+   "name_el": "Βικτώρια",
+   "lat": 37.9932,
+   "lng": 23.7305
+  },
+  {
+   "slug": "attiki",
+   "name": "Attiki",
+   "name_el": "Αττική",
+   "lat": 37.9999,
+   "lng": 23.7222
+  },
+  {
+   "slug": "agios-nikolaos",
+   "name": "Agios Nikolaos",
+   "name_el": "Άγιος Νικόλαος",
+   "lat": 38.007,
+   "lng": 23.7285
+  },
+  {
+   "slug": "kato-patissia",
+   "name": "Kato Patissia",
+   "name_el": "Κάτω Πατήσια",
+   "lat": 38.0117,
+   "lng": 23.7298
+  },
+  {
+   "slug": "agios-eleftherios",
+   "name": "Agios Eleftherios",
+   "name_el": "Άγιος Ελευθέριος",
+   "lat": 38.02,
+   "lng": 23.7313
+  },
+  {
+   "slug": "ano-patissia",
+   "name": "Ano Patissia",
+   "name_el": "Άνω Πατήσια",
+   "lat": 38.0231,
+   "lng": 23.7343
+  },
+  {
+   "slug": "perissos",
+   "name": "Perissos",
+   "name_el": "Περισσός",
+   "lat": 38.0327,
+   "lng": 23.744
+  },
+  {
+   "slug": "pefkakia",
+   "name": "Pefkakia",
+   "name_el": "Πευκάκια",
+   "lat": 38.0357,
+   "lng": 23.7463
+  },
+  {
+   "slug": "nea-ionia",
+   "name": "Nea Ionia",
+   "name_el": "Νέα Ιωνία",
+   "lat": 38.0415,
+   "lng": 23.7547
+  },
+  {
+   "slug": "iraklio",
+   "name": "Iraklio",
+   "name_el": "Ηράκλειο",
+   "lat": 38.0469,
+   "lng": 23.766
+  },
+  {
+   "slug": "irini",
+   "name": "Irini",
+   "name_el": "Ειρήνη",
+   "lat": 38.0431,
+   "lng": 23.783
+  },
+  {
+   "slug": "neratziotissa",
+   "name": "Neratziotissa",
+   "name_el": "Νερατζιώτισσα",
+   "lat": 38.0453,
+   "lng": 23.7926
+  },
+  {
+   "slug": "marousi",
+   "name": "Marousi",
+   "name_el": "Μαρούσι",
+   "lat": 38.056,
+   "lng": 23.8057
+  },
+  {
+   "slug": "kat",
+   "name": "KAT",
+   "name_el": "ΚΑΤ",
+   "lat": 38.0654,
+   "lng": 23.8037
+  },
+  {
+   "slug": "kifisia",
+   "name": "Kifisia",
+   "name_el": "Κηφισιά",
+   "lat": 38.0735,
+   "lng": 23.8083
+  },
+  {
+   "slug": "anthoupoli",
+   "name": "Anthoupoli",
+   "name_el": "Ανθούπολη",
+   "lat": 38.0173,
+   "lng": 23.6844
+  },
+  {
+   "slug": "peristeri",
+   "name": "Peristeri",
+   "name_el": "Περιστέρι",
+   "lat": 38.0132,
+   "lng": 23.6918
+  },
+  {
+   "slug": "agios-antonios",
+   "name": "Agios Antonios",
+   "name_el": "Άγιος Αντώνιος",
+   "lat": 38.0066,
+   "lng": 23.6995
+  },
+  {
+   "slug": "sepolia",
+   "name": "Sepolia",
+   "name_el": "Σεπόλια",
+   "lat": 38.0027,
+   "lng": 23.7132
+  },
+  {
+   "slug": "larissis",
+   "name": "Larissis",
+   "name_el": "Λαρίσης",
+   "lat": 37.9921,
+   "lng": 23.721
+  },
+  {
+   "slug": "metaxourgeio",
+   "name": "Metaxourgeio",
+   "name_el": "Μεταξουργείο",
+   "lat": 37.9862,
+   "lng": 23.7213
+  },
+  {
+   "slug": "panepistimio",
+   "name": "Panepistimio",
+   "name_el": "Πανεπιστήμιο",
+   "lat": 37.9806,
+   "lng": 23.7326
+  },
+  {
+   "slug": "syntagma",
+   "name": "Syntagma",
+   "name_el": "Σύνταγμα",
+   "lat": 37.9755,
+   "lng": 23.7348
+  },
+  {
+   "slug": "akropoli",
+   "name": "Akropoli",
+   "name_el": "Ακρόπολη",
+   "lat": 37.969,
+   "lng": 23.73
+  },
+  {
+   "slug": "syngrou-fix",
+   "name": "Syngrou-Fix",
+   "name_el": "Συγγρού-Φιξ",
+   "lat": 37.964,
+   "lng": 23.7265
+  },
+  {
+   "slug": "neos-kosmos",
+   "name": "Neos Kosmos",
+   "name_el": "Νέος Κόσμος",
+   "lat": 37.9576,
+   "lng": 23.7288
+  },
+  {
+   "slug": "agios-ioannis",
+   "name": "Agios Ioannis",
+   "name_el": "Άγιος Ιωάννης",
+   "lat": 37.9566,
+   "lng": 23.7343
+  },
+  {
+   "slug": "dafni",
+   "name": "Dafni",
+   "name_el": "Δάφνη",
+   "lat": 37.9494,
+   "lng": 23.7372
+  },
+  {
+   "slug": "agios-dimitrios",
+   "name": "Agios Dimitrios",
+   "name_el": "Άγιος Δημήτριος",
+   "lat": 37.9406,
+   "lng": 23.7405
+  },
+  {
+   "slug": "ilioupoli",
+   "name": "Ilioupoli",
+   "name_el": "Ηλιούπολη",
+   "lat": 37.9296,
+   "lng": 23.7448
+  },
+  {
+   "slug": "alimos",
+   "name": "Alimos",
+   "name_el": "Άλιμος",
+   "lat": 37.918,
+   "lng": 23.7405
+  },
+  {
+   "slug": "argyroupoli",
+   "name": "Argyroupoli",
+   "name_el": "Αργυρούπολη",
+   "lat": 37.904,
+   "lng": 23.7449
+  },
+  {
+   "slug": "elliniko",
+   "name": "Elliniko",
+   "name_el": "Ελληνικό",
+   "lat": 37.8927,
+   "lng": 23.7473
+  },
+  {
+   "slug": "dimotiko-theatro",
+   "name": "Dimotiko Theatro",
+   "name_el": "Δημοτικό Θέατρο",
+   "lat": 37.9437,
+   "lng": 23.6476
+  },
+  {
+   "slug": "maniatika",
+   "name": "Maniatika",
+   "name_el": "Μανιάτικα",
+   "lat": 37.955,
+   "lng": 23.641
+  },
+  {
+   "slug": "nikaia",
+   "name": "Nikaia",
+   "name_el": "Νίκαια",
+   "lat": 37.966,
+   "lng": 23.6472
+  },
+  {
+   "slug": "korydallos",
+   "name": "Korydallos",
+   "name_el": "Κορυδαλλός",
+   "lat": 37.977,
+   "lng": 23.6505
+  },
+  {
+   "slug": "agia-varvara",
+   "name": "Agia Varvara",
+   "name_el": "Αγία Βαρβάρα",
+   "lat": 37.9902,
+   "lng": 23.6592
+  },
+  {
+   "slug": "agia-marina",
+   "name": "Agia Marina",
+   "name_el": "Αγία Μαρίνα",
+   "lat": 37.9969,
+   "lng": 23.6668
+  },
+  {
+   "slug": "egaleo",
+   "name": "Egaleo",
+   "name_el": "Αιγάλεω",
+   "lat": 37.9918,
+   "lng": 23.6817
+  },
+  {
+   "slug": "eleonas",
+   "name": "Eleonas",
+   "name_el": "Ελαιώνας",
+   "lat": 37.9877,
+   "lng": 23.6939
+  },
+  {
+   "slug": "kerameikos",
+   "name": "Kerameikos",
+   "name_el": "Κεραμεικός",
+   "lat": 37.9784,
+   "lng": 23.7113
+  },
+  {
+   "slug": "evangelismos",
+   "name": "Evangelismos",
+   "name_el": "Ευαγγελισμός",
+   "lat": 37.9764,
+   "lng": 23.7466
+  },
+  {
+   "slug": "megaro-moussikis",
+   "name": "Megaro Moussikis",
+   "name_el": "Μέγαρο Μουσικής",
+   "lat": 37.9792,
+   "lng": 23.7525
+  },
+  {
+   "slug": "ampelokipi",
+   "name": "Ampelokipi",
+   "name_el": "Αμπελόκηποι",
+   "lat": 37.9873,
+   "lng": 23.7568
+  },
+  {
+   "slug": "panormou",
+   "name": "Panormou",
+   "name_el": "Πανόρμου",
+   "lat": 37.9935,
+   "lng": 23.7632
+  },
+  {
+   "slug": "katehaki",
+   "name": "Katehaki",
+   "name_el": "Κατεχάκη",
+   "lat": 37.993,
+   "lng": 23.7766
+  },
+  {
+   "slug": "ethniki-amyna",
+   "name": "Ethniki Amyna",
+   "name_el": "Εθνική Άμυνα",
+   "lat": 37.9936,
+   "lng": 23.786
+  },
+  {
+   "slug": "holargos",
+   "name": "Holargos",
+   "name_el": "Χολαργός",
+   "lat": 37.9996,
+   "lng": 23.7942
+  },
+  {
+   "slug": "nomismatokopio",
+   "name": "Nomismatokopio",
+   "name_el": "Νομισματοκοπείο",
+   "lat": 38.0042,
+   "lng": 23.805
+  },
+  {
+   "slug": "agia-paraskevi",
+   "name": "Agia Paraskevi",
+   "name_el": "Αγία Παρασκευή",
+   "lat": 38.0108,
+   "lng": 23.8194
+  },
+  {
+   "slug": "halandri",
+   "name": "Halandri",
+   "name_el": "Χαλάνδρι",
+   "lat": 38.0217,
+   "lng": 23.8212
+  },
+  {
+   "slug": "doukissis-plakentias",
+   "name": "Doukissis Plakentias",
+   "name_el": "Δουκίσσης Πλακεντίας",
+   "lat": 38.0243,
+   "lng": 23.833
+  },
+  {
+   "slug": "pallini",
+   "name": "Pallini",
+   "name_el": "Παλλήνη",
+   "lat": 38.0058,
+   "lng": 23.8693
+  },
+  {
+   "slug": "paiania-kantza",
+   "name": "Paiania-Kantza",
+   "name_el": "Παιανία-Κάντζα",
+   "lat": 37.9927,
+   "lng": 23.8855
+  },
+  {
+   "slug": "koropi",
+   "name": "Koropi",
+   "name_el": "Κορωπί",
+   "lat": 37.9137,
+   "lng": 23.8963
+  },
+  {
+   "slug": "airport",
+   "name": "Athens Airport",
+   "name_el": "Αεροδρόμιο",
+   "lat": 37.9364,
+   "lng": 23.9445
+  }
+ ]
+}

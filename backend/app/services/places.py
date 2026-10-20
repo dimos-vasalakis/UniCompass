@@ -35,10 +35,11 @@ from app.services.geo import (
     walk_minutes,
 )
 from app.services.matching import SCORE_FACTORS, AreaInput
+from app.services.metro import nearest_station
 
 # Bump when the shape of cached values changes. Reference data only changes
 # when scripts/seed.py or compute_travel_times.py runs; TTL bounds staleness.
-PREFIX = "places:v2"
+PREFIX = "places:v3"
 TTL = 6 * 3600
 
 
@@ -275,6 +276,7 @@ async def _neighborhood_base(
         pros=points(lang, n.pros),
         cons=points(lang, n.cons),
         sources=n.sources,
+        metro=nearest_station(n.lat, n.lng, lang),
         travel_times=travel,
     )
     await cache_set(key, out.model_dump(mode="json"), TTL)
