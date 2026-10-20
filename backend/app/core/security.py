@@ -26,7 +26,11 @@ def _jwks_client() -> jwt.PyJWKClient:
 
 def _decode(token: str) -> dict:
     settings = get_settings()
-    if settings.supabase_jwt_secret:
+    # Projects on Supabase's asymmetric signing keys issue ES256 tokens even when
+    # the legacy HS256 secret is still configured, so go by the token's own alg.
+    if jwt.get_unverified_header(token).get("alg") == "HS256":
+        if not settings.supabase_jwt_secret:
+            raise jwt.InvalidTokenError("HS256 token but no SUPABASE_JWT_SECRET")
         return jwt.decode(
             token,
             settings.supabase_jwt_secret,
