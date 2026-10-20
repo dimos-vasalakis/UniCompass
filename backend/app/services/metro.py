@@ -14,14 +14,14 @@ IN_AREA_KM = 1.0
 
 
 @cache
-def _load(city: str) -> dict:
+def load_metro(city: str) -> dict:
     return json.loads((DATA / f"{city}.json").read_text())
 
 
 def nearest_station(
     lat: float, lng: float, lang: Lang, city: str = "athens"
 ) -> MetroOut | None:
-    data = _load(city)
+    data = load_metro(city)
     stations = {s["slug"]: s for s in data["stations"]}
     if not stations:
         return None

@@ -207,3 +207,35 @@ def test_match_results_follow_the_language(client: TestClient) -> None:
     assert [a["slug"] for a in en] == [a["slug"] for a in el]
     assert all(a["description"] != b["description"] for a, b in zip(en, el))
     assert all(a["pros"][0]["text"] != b["pros"][0]["text"] for a, b in zip(en, el))
+
+
+def test_route_to_campus(client: TestClient) -> None:
+    res = client.get("/api/v1/neighborhoods/peristeri/route?campus=ntua-patision")
+    assert res.status_code == 200
+    body = res.json()
+    assert body["campus"]["slug"] == "ntua-patision"
+    modes = [o["mode"] for o in body["options"]]
+    assert "metro" in modes and "transit" in modes
+    assert [o["minutes"] for o in body["options"]] == sorted(
+        o["minutes"] for o in body["options"]
+    )
+    metro = next(o for o in body["options"] if o["mode"] == "metro")
+    assert any(s["kind"] == "transfer" for s in metro["steps"])
+    el = client.get(
+        "/api/v1/neighborhoods/peristeri/route?campus=ntua-patision&lang=el"
+    ).json()
+    assert el["campus"]["name"] != body["campus"]["name"]
+
+
+def test_route_unknown_area_or_campus(client: TestClient) -> None:
+    assert (
+        client.get(
+            "/api/v1/neighborhoods/atlantis/route?campus=ntua-patision"
+        ).status_code
+        == 404
+    )
+    assert (
+        client.get("/api/v1/neighborhoods/peristeri/route?campus=nope").status_code
+        == 404
+    )
+    assert client.get("/api/v1/neighborhoods/peristeri/route").status_code == 422

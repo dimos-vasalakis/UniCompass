@@ -82,3 +82,20 @@ test("stepper lets you go back but not skip ahead", async ({ page }) => {
   await page.getByRole("button", { name: /Where you study/ }).click();
   await expect(page.getByRole("heading", { name: "Where will you study?" })).toBeVisible();
 });
+
+test("full guide shows how to get to the campus", async ({ page }) => {
+  await pickDepartment(page, /AUEB/, "Informatics");
+  await findAreas(page);
+  await cards(page).first().getByRole("link", { name: /Full guide/ }).click();
+  await expect(page).toHaveURL(/\/neighborhoods\/[a-z-]+\?campus=aueb-patision/);
+  await expect(page.getByRole("heading", { name: /How to get to/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "By bus or public transport" })).toBeVisible();
+  // the campus is on the area's map
+  await expect(page.locator(".leaflet-marker-icon").filter({ hasText: /^🎓$/ })).toHaveCount(1);
+});
+
+test("an area page opened without a campus has no route section", async ({ page }) => {
+  await page.goto("/neighborhoods/kallithea");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /How to get to/ })).toHaveCount(0);
+});

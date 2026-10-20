@@ -106,6 +106,38 @@ export type Metro = {
   in_area: boolean;
 };
 
+export type RouteStep = {
+  kind: "walk" | "ride" | "transfer" | "transit";
+  minutes: number;
+  to: string | null;
+  to_kind: "station" | "campus" | null;
+  meters: number | null;
+  line_code: string | null;
+  line_color: string | null;
+  line_hex: string | null;
+  line_name: string | null;
+  from_station: string | null;
+  to_station: string | null;
+  direction: string | null;
+  stops: number | null;
+  station: string | null;
+  from_line_code: string | null;
+  from_line_color: string | null;
+  from_line_hex: string | null;
+};
+
+export type RouteOption = {
+  mode: "walk" | "metro" | "transit";
+  minutes: number;
+  estimated: boolean;
+  steps: RouteStep[];
+};
+
+export type RouteGuide = {
+  campus: { slug: string; name: string; lat: number; lng: number };
+  options: RouteOption[];
+};
+
 export type NeighborhoodDetail = NeighborhoodSummary & {
   description: string;
   pros: Point[];

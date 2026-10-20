@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ProsCons } from "@/components/ProsCons";
 import AreaMap, { type MapPoint } from "@/components/Map";
+import { RouteGuide } from "@/components/RouteGuide";
 import { MetroCard } from "@/components/MetroCard";
 import { ScoreBar } from "@/components/ScoreBar";
 import { ApiUnavailable } from "@/components/ApiUnavailable";
@@ -12,7 +13,7 @@ import { SCORE_KEYS } from "@/lib/factors";
 import { areaNames, fmt } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/en";
 import { getDictionary, getLocale } from "@/lib/i18n/server";
-import type { NearbyPlace, NeighborhoodDetail, TravelTime } from "@/types";
+import type { NearbyPlace, NeighborhoodDetail, RouteGuide as Route, TravelTime } from "@/types";
 
 function Minutes({ d, t }: { d: Dictionary; t: TravelTime }) {
   return (
@@ -44,13 +45,19 @@ function PlaceList({ title, places, empty }: { title: string; places: NearbyPlac
   );
 }
 
-async function Area({ params }: { params: Promise<{ slug: string }> }) {
+async function Area({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ campus?: string | string[] }> }) {
   const { slug } = await params;
+  const campusParam = (await searchParams).campus;
+  const campus = typeof campusParam === "string" ? campusParam : undefined;
   const locale = await getLocale();
   const d = await getDictionary();
   const n = await tryGetPublic<NeighborhoodDetail>(`/neighborhoods/${slug}?lang=${locale}`);
   if (n === undefined) return <ApiUnavailable />;
   if (n === null) notFound();
+  // Only when the student came from a match result: the route needs a campus.
+  const route = campus
+    ? await tryGetPublic<Route>(`/neighborhoods/${slug}/route?campus=${encodeURIComponent(campus)}&lang=${locale}`)
+    : null;
 
   const campuses = n.travel_times.filter((t) => t.destination_type === "campus");
   const hubs = n.travel_times.filter((t) => t.destination_type === "hub");
@@ -59,6 +66,9 @@ async function Area({ params }: { params: Promise<{ slug: string }> }) {
     ...n.supermarkets.map((p): MapPoint => ({ key: `s:${p.lat},${p.lng}`, label: p.name, lat: p.lat, lng: p.lng, kind: "supermarket", badge: "🛒" })),
     ...n.gyms.map((p): MapPoint => ({ key: `g:${p.lat},${p.lng}`, label: p.name, lat: p.lat, lng: p.lng, kind: "gym", badge: "🏋️" })),
   ];
+  if (route) {
+    points.push({ key: "campus", label: route.campus.name, lat: route.campus.lat, lng: route.campus.lng, kind: "campus", badge: "🎓" });
+  }
   if (n.metro) {
     points.push({
       key: `metro:${n.metro.station.slug}`,
@@ -84,6 +94,8 @@ async function Area({ params }: { params: Promise<{ slug: string }> }) {
           {d.area.typicalRent}<strong>{fmt(d.area.rentValue, { n: n.typical_studio_rent })}</strong>
         </p>
       </header>
+
+      {route && route.options.length > 0 && <RouteGuide d={d.route} areaName={areaNames(locale, n)[0]} route={route} />}
 
       <section>
         <h2 className="mb-3 text-xl font-semibold">{d.area.prosCons}</h2>
@@ -179,7 +191,7 @@ async function Area({ params }: { params: Promise<{ slug: string }> }) {
   );
 }
 
-async function PageShell({ params }: { params: Promise<{ slug: string }> }) {
+async function PageShell({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ campus?: string | string[] }> }) {
   const d = (await getDictionary()).area;
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
@@ -188,7 +200,7 @@ async function PageShell({ params }: { params: Promise<{ slug: string }> }) {
       </Link>
       <div className="mt-4">
         <Suspense fallback={<div className="h-96 animate-pulse rounded-lg bg-brand-light" />}>
-          <Area params={params} />
+          <Area params={params} searchParams={searchParams} />
         </Suspense>
       </div>
       <div className="mt-12 rounded-xl bg-brand-light p-6">
@@ -201,6 +213,6 @@ async function PageShell({ params }: { params: Promise<{ slug: string }> }) {
   );
 }
 
-export default function NeighborhoodPage({ params }: PageProps<"/neighborhoods/[slug]">) {
-  return <PageShell params={params} />;
+export default function NeighborhoodPage({ params, searchParams }: PageProps<"/neighborhoods/[slug]">) {
+  return <PageShell params={params} searchParams={searchParams} />;
 }

@@ -8,6 +8,7 @@ from app.schemas.places import (
     NeighborhoodSummary,
     UniversityOut,
 )
+from app.schemas.route import RouteOut
 from app.services import places
 
 router = APIRouter(tags=["places"])
@@ -36,3 +37,13 @@ async def neighborhood(
     if detail is None:
         raise HTTPException(404, "Neighborhood not found")
     return detail
+
+
+@router.get("/neighborhoods/{slug}/route", response_model=RouteOut)
+async def route_to_campus(
+    slug: str, campus: str, db: DbSession, lang: LangParam = "en"
+) -> RouteOut:
+    route = await places.get_route(db, slug, campus, lang)
+    if route is None:
+        raise HTTPException(404, "Neighborhood or campus not found")
+    return route

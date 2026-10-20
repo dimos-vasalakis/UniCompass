@@ -27,6 +27,7 @@ from app.schemas.places import (
     TravelTimeOut,
     UniversityOut,
 )
+from app.schemas.route import RouteCampus, RouteOption, RouteOut, RouteStep
 from app.services.cache import cache_get, cache_set
 from app.services.geo import (
     WALKABLE_KM,
@@ -36,6 +37,7 @@ from app.services.geo import (
 )
 from app.services.matching import SCORE_FACTORS, AreaInput
 from app.services.metro import nearest_station
+from app.services.routing import metro_option, walk_option
 
 # Bump when the shape of cached values changes. Reference data only changes
 # when scripts/seed.py or compute_travel_times.py runs; TTL bounds staleness.
@@ -393,4 +395,53 @@ async def load_match_inputs(
             )
         )
     await cache_set(key, [a.__dict__ for a in out], TTL)
+    return out
+
+
+async def get_route(
+    db: AsyncSession, slug: str, campus_slug: str, lang: Lang
+) -> RouteOut | None:
+    """How to get from a neighborhood to a campus: on foot, by metro (with changes) and by bus."""
+    key = f"{PREFIX}:route:{lang}:{slug}:{campus_slug}"
+    if cached := await cache_get(key):
+        return RouteOut(**cached)
+    n = await db.scalar(select(Neighborhood).where(Neighborhood.slug == slug))
+    campus = await db.scalar(select(Campus).where(Campus.slug == campus_slug))
+    if n is None or campus is None:
+        return None
+    name = pick(lang, campus.name, campus.name_el)
+    a, b = (n.lat, n.lng), (campus.lat, campus.lng)
+
+    options: list[RouteOption] = []
+    if walk := walk_option(a, b, name):
+        options.append(walk)
+    if metro := metro_option(a, b, name, lang):
+        options.append(metro)
+    t = await db.scalar(
+        select(TravelTime).where(
+            TravelTime.neighborhood_id == n.id, TravelTime.campus_id == campus.id
+        )
+    )
+    if t is not None:
+        options.append(
+            RouteOption(
+                mode="transit",
+                minutes=t.transit_minutes,
+                estimated=t.source == "estimate",
+                steps=[
+                    RouteStep(
+                        kind="transit",
+                        minutes=t.transit_minutes,
+                        to=name,
+                        to_kind="campus",
+                    )
+                ],
+            )
+        )
+    options.sort(key=lambda o: o.minutes)
+    out = RouteOut(
+        campus=RouteCampus(slug=campus.slug, name=name, lat=campus.lat, lng=campus.lng),
+        options=options,
+    )
+    await cache_set(key, out.model_dump(mode="json"), TTL)
     return out

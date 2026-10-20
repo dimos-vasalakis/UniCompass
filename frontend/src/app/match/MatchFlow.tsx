@@ -437,7 +437,7 @@ function Results({
   d: Dictionary;
   locale: Locale;
   response: MatchResponse;
-  campusPoint: { name: string; lat: number; lng: number } | null;
+  campusPoint: { slug: string; name: string; lat: number; lng: number } | null;
   hub: Hub | null;
   deptName: string;
   uniName: string;
@@ -555,7 +555,7 @@ function Results({
           </div>
           <ol className="space-y-4 lg:col-start-1 lg:row-start-1">
             {results.map((r, i) => (
-              <ResultCard key={r.slug} d={d} locale={locale} area={r} rank={i + 1} hub={hub} />
+              <ResultCard key={r.slug} d={d} locale={locale} area={r} rank={i + 1} hub={hub} campusSlug={campusPoint?.slug ?? null} />
             ))}
           </ol>
         </div>
@@ -570,12 +570,14 @@ function ResultCard({
   area,
   rank,
   hub,
+  campusSlug,
 }: {
   d: Dictionary;
   locale: Locale;
   area: MatchArea;
   rank: number;
   hub: Hub | null;
+  campusSlug: string | null;
 }) {
   const [name, altName] = areaNames(locale, area);
   return (
@@ -631,7 +633,7 @@ function ResultCard({
         <ProsCons pros={area.pros} cons={area.cons} limit={3} />
       </div>
 
-      <Link href={`/neighborhoods/${area.slug}`} className="mt-4 inline-block font-medium text-brand hover:underline">
+      <Link href={`/neighborhoods/${area.slug}${campusSlug ? `?campus=${campusSlug}` : ""}`} className="mt-4 inline-block font-medium text-brand hover:underline">
         {fmt(d.match.fullGuide, { name })}
       </Link>
     </li>
