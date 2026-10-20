@@ -46,8 +46,9 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
   );
 
   function callbackUrl() {
+    // Always carries a query string: the email templates append `&token_hash=…` to it.
     const url = new URL("/auth/callback", window.location.origin);
-    if (next) url.searchParams.set("next", next);
+    url.searchParams.set("next", next ?? "/dashboard");
     return url.toString();
   }
 
