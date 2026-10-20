@@ -6,22 +6,25 @@ import { AuthForm } from "./AuthForm";
 
 const signInWithOtp = vi.fn();
 const getSession = vi.fn();
+const verifyOtp = vi.fn();
 const replace = vi.fn();
+const refresh = vi.fn();
 let search = "";
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace }),
+  useRouter: () => ({ replace, refresh }),
   useSearchParams: () => new URLSearchParams(search),
 }));
 vi.mock("next/image", () => ({ default: (props: { alt: string }) => <span>{props.alt}</span> }));
 vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({ auth: { signInWithOtp, getSession, signInWithOAuth: vi.fn() } }),
+  createClient: () => ({ auth: { signInWithOtp, getSession, verifyOtp, signInWithOAuth: vi.fn() } }),
 }));
 
 beforeEach(() => {
   search = "";
   signInWithOtp.mockReset();
   getSession.mockReset().mockResolvedValue({ data: { session: null } });
+  verifyOtp.mockReset();
   replace.mockReset();
 });
 
@@ -57,6 +60,23 @@ describe("AuthForm sign-in", () => {
     getSession.mockResolvedValue({ data: { session: { access_token: "t" } } });
     window.dispatchEvent(new Event("focus"));
     await vi.waitFor(() => expect(replace).toHaveBeenCalledWith("/match"));
+  });
+
+  it("signs in this tab with the code from the email", async () => {
+    signInWithOtp.mockResolvedValue({ error: null });
+    verifyOtp.mockResolvedValueOnce({ error: { message: "Token has expired or is invalid" } });
+    render(<AuthForm mode="signin" configured />);
+    await submitEmail("me@example.com");
+
+    await userEvent.type(screen.getByLabelText("Code from the email"), "12a3456");
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+    expect(verifyOtp).toHaveBeenCalledWith({ email: "me@example.com", token: "123456", type: "email" });
+    expect(screen.getByText(/code is wrong or has expired/)).toBeInTheDocument();
+    expect(replace).not.toHaveBeenCalled();
+
+    verifyOtp.mockResolvedValueOnce({ error: null });
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+    expect(replace).toHaveBeenCalledWith("/dashboard");
   });
 
   it("shows other errors", async () => {

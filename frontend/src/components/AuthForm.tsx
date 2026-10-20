@@ -42,6 +42,7 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
   const [email, setEmail] = useState(params.get("email") ?? "");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(
     params.get("error") === "auth" ? d.auth.invalidLink : null,
   );
@@ -62,6 +63,21 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
       window.removeEventListener("focus", check);
     };
   }, [sent, next, router]);
+
+  // The code in the email signs in this tab even when the link was opened on another device.
+  async function withCode(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    const { error } = await createClient().auth.verifyOtp({ email, token: code, type: "email" });
+    if (error) {
+      setError(d.auth.codeInvalid);
+      setBusy(false);
+      return;
+    }
+    router.replace(next ?? "/dashboard");
+    router.refresh();
+  }
 
   function callbackUrl() {
     // Always carries a query string: the email templates append `&token_hash=…` to it.
@@ -149,6 +165,31 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
               </Link>
             </p>
           )}
+          <form onSubmit={withCode} className="mt-4 flex gap-2">
+            <label htmlFor="otp-code" className="sr-only">
+              {d.auth.codeLabel}
+            </label>
+            <input
+              id="otp-code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6,10}"
+              required
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              placeholder={d.auth.codeLabel}
+              className={`${input} min-w-0 flex-1 bg-background text-center tracking-[0.3em] placeholder:tracking-normal`}
+            />
+            <button
+              type="submit"
+              disabled={busy}
+              aria-busy={busy}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+            >
+              {busy && <Spinner size={16} className="text-white" decorative />}
+              {busy ? d.auth.codeVerifying : d.auth.codeSubmit}
+            </button>
+          </form>
         </div>
       ) : (
         <fieldset disabled={!configured} className="flex flex-col gap-3 disabled:opacity-50">

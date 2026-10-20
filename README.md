@@ -106,7 +106,7 @@ Database URL gotchas:
    ```html
    <a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email">…</a>
    ```
-   The default `{{ .ConfirmationURL }}` uses PKCE, which only completes in the browser that requested the link. Opening it from a mail app, a phone or another browser fails with "invalid or expired link". `/auth/callback` verifies `token_hash` links in any browser. `{{ .RedirectTo }}` is the site's `/auth/callback?next=…` URL, so local sign-ups come back to localhost.
+   Also show `{{ .Token }}`, the code people can type on the "check your email" screen when they open the email on another device (the link signs in whichever browser opens it). The default `{{ .ConfirmationURL }}` uses PKCE, which only completes in the browser that requested the link. Opening it from a mail app, a phone or another browser fails with "invalid or expired link". `/auth/callback` verifies `token_hash` links in any browser. `{{ .RedirectTo }}` is the site's `/auth/callback?next=…` URL, so local sign-ups come back to localhost.
 5. **Don't edit tables, RLS or grants in the dashboard.** The Alembic migrations own the schema.
 
 ## Deployment
