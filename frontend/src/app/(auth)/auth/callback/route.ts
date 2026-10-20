@@ -41,5 +41,13 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
+  if (supabaseConfigured) {
+    // A used or older link (mail apps group them into one thread) is harmless once signed in.
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) return NextResponse.redirect(`${origin}${next}`);
+  }
   return NextResponse.redirect(`${origin}/login?error=auth`);
 }

@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useDict } from "@/lib/i18n/client";
 import { safeNext } from "@/lib/redirect";
 import { createClient } from "@/lib/supabase/client";
@@ -35,6 +35,7 @@ function GitHubIcon() {
 export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean }) {
   const d = useDict();
   const copy = d.auth[mode];
+  const router = useRouter();
   const params = useSearchParams();
   const next = safeNext(params.get("next"));
   const [fullName, setFullName] = useState("");
@@ -44,6 +45,23 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
   const [error, setError] = useState<string | null>(
     params.get("error") === "auth" ? d.auth.invalidLink : null,
   );
+
+  // The email link is usually opened in another tab. That tab's sign-in sets the
+  // session cookie this tab shares, so leave the "check your email" screen once it appears.
+  useEffect(() => {
+    if (!sent) return;
+    const supabase = createClient();
+    async function check() {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) router.replace(next ?? "/dashboard");
+    }
+    const interval = setInterval(check, 3000);
+    window.addEventListener("focus", check);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", check);
+    };
+  }, [sent, next, router]);
 
   function callbackUrl() {
     // Always carries a query string: the email templates append `&token_hash=…` to it.

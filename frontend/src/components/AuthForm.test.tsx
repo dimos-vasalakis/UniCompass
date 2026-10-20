@@ -5,17 +5,24 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthForm } from "./AuthForm";
 
 const signInWithOtp = vi.fn();
+const getSession = vi.fn();
+const replace = vi.fn();
 let search = "";
 
-vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(search) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace }),
+  useSearchParams: () => new URLSearchParams(search),
+}));
 vi.mock("next/image", () => ({ default: (props: { alt: string }) => <span>{props.alt}</span> }));
 vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({ auth: { signInWithOtp, signInWithOAuth: vi.fn() } }),
+  createClient: () => ({ auth: { signInWithOtp, getSession, signInWithOAuth: vi.fn() } }),
 }));
 
 beforeEach(() => {
   search = "";
   signInWithOtp.mockReset();
+  getSession.mockReset().mockResolvedValue({ data: { session: null } });
+  replace.mockReset();
 });
 
 async function submitEmail(email: string) {
@@ -34,6 +41,22 @@ describe("AuthForm sign-in", () => {
     expect(signInWithOtp).toHaveBeenCalledWith(
       expect.objectContaining({ email: "nobody@example.com", options: expect.objectContaining({ shouldCreateUser: false }) }),
     );
+  });
+
+  it("leaves the check-your-email screen once the link signs in from another tab", async () => {
+    search = "next=/match";
+    signInWithOtp.mockResolvedValue({ error: null });
+    render(<AuthForm mode="signin" configured />);
+    await submitEmail("me@example.com");
+    expect(screen.getByText("Check your email")).toBeInTheDocument();
+
+    window.dispatchEvent(new Event("focus"));
+    await vi.waitFor(() => expect(getSession).toHaveBeenCalled());
+    expect(replace).not.toHaveBeenCalled();
+
+    getSession.mockResolvedValue({ data: { session: { access_token: "t" } } });
+    window.dispatchEvent(new Event("focus"));
+    await vi.waitFor(() => expect(replace).toHaveBeenCalledWith("/match"));
   });
 
   it("shows other errors", async () => {
