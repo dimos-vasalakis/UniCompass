@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import { useDict } from "@/lib/i18n/client";
 import { safeNext } from "@/lib/redirect";
+import { Spinner } from "@/components/Spinner";
 
 export function UsernameForm() {
   const d = useDict().auth.username;
@@ -57,8 +58,10 @@ export function UsernameForm() {
         <button
           type="submit"
           disabled={busy}
-          className="rounded-lg bg-brand px-3 py-2.5 font-medium text-white hover:opacity-90 disabled:opacity-50"
+          aria-busy={busy}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-3 py-2.5 font-medium text-white hover:opacity-90 disabled:opacity-50"
         >
+          {busy && <Spinner size={16} className="text-white" decorative />}
           {busy ? d.saving : d.submit}
         </button>
       </form>

@@ -18,11 +18,12 @@ export async function getPublic<T>(path: string): Promise<T | null> {
   return (await res.json()) as T;
 }
 
-/** Uncached authenticated GET for Server Components (e.g. the user's saved data). */
-export async function getPrivate<T>(path: string, accessToken: string): Promise<T> {
+/** Uncached authenticated GET for Server Components (e.g. the user's saved data). Returns null on 404. */
+export async function getPrivate<T>(path: string, accessToken: string): Promise<T | null> {
   const res = await fetch(`${API_URL}/api/v1${path}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
+  if (res.status === 404) return null;
   if (!res.ok) throw new Error(`API ${res.status} for ${path}`);
   return (await res.json()) as T;
 }

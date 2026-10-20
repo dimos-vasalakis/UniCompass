@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { DeleteSavedMatch } from "@/components/DeleteSavedMatch";
+import { LoadingBlock } from "@/components/Spinner";
 import { getPrivate } from "@/lib/api/server";
-import { areaNames, fmt } from "@/lib/i18n/config";
+import { areaNames, fmt, fmtDate } from "@/lib/i18n/config";
 import { getDictionary, getLocale } from "@/lib/i18n/server";
 import { getAccessToken, getUser } from "@/lib/supabase/server";
 import type { Profile, SavedMatch } from "@/types";
@@ -19,13 +21,13 @@ async function Dashboard() {
   let savedError = false;
   if (token) {
     try {
-      saved = await getPrivate<SavedMatch[]>("/match/saved", token);
+      saved = (await getPrivate<SavedMatch[]>(`/match/saved?lang=${locale}`, token)) ?? [];
     } catch {
       savedError = true;
     }
     try {
       const me = await getPrivate<Profile>("/users/me", token);
-      name = me.username ?? me.full_name ?? name;
+      name = me?.username ?? me?.full_name ?? name;
     } catch {
       // keep the email fallback
     }
@@ -49,6 +51,23 @@ async function Dashboard() {
           <ul className="mt-3 space-y-3">
             {saved.map((m) => (
               <li key={m.id} className="rounded-lg border border-border p-4">
+                <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <Link href={`/dashboard/saved/${m.id}`} className="font-semibold hover:text-brand">
+                      {m.department} · {m.university}
+                    </Link>
+                    <p className="text-sm text-muted">{fmt(d.savedOn, { date: fmtDate(locale, m.created_at) })}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/dashboard/saved/${m.id}`}
+                      className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark"
+                    >
+                      {d.open}
+                    </Link>
+                    <DeleteSavedMatch id={m.id} />
+                  </div>
+                </div>
                 <ol className="flex flex-wrap gap-x-6 gap-y-1">
                   {m.results.map((r, i) => (
                     <li key={r.slug}>
@@ -71,7 +90,7 @@ async function Dashboard() {
 export default function DashboardPage() {
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-6">
-      <Suspense fallback={<div className="h-8 w-64 animate-pulse rounded bg-brand-light" />}>
+      <Suspense fallback={<LoadingBlock />}>
         <Dashboard />
       </Suspense>
     </main>

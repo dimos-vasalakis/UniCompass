@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
@@ -69,4 +70,8 @@ class MatchResponse(BaseModel):
 class SavedMatchOut(BaseModel):
     id: uuid.UUID
     department_id: uuid.UUID
+    department: str
+    university: str  # short name
+    created_at: datetime
+    preferences: MatchRequest
     results: list[MatchArea]

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { LoadingBlock } from "@/components/Spinner";
 import { ApiUnavailable, NoAreaData } from "@/components/ApiUnavailable";
 import { tryGetPublic } from "@/lib/api/server";
 import { SCORE_KEYS, ZONE_KEYS } from "@/lib/factors";
@@ -91,7 +92,7 @@ export default function NeighborhoodsPage() {
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
       <Heading />
-      <Suspense fallback={<div className="h-96 animate-pulse rounded-lg bg-brand-light" />}>
+      <Suspense fallback={<LoadingBlock className="min-h-96" />}>
         <AreaList />
       </Suspense>
     </main>

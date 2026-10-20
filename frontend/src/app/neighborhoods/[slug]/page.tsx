@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { LoadingBlock } from "@/components/Spinner";
 import { ProsCons } from "@/components/ProsCons";
 import AreaMap, { type MapPoint } from "@/components/Map";
 import { RouteGuide } from "@/components/RouteGuide";
@@ -199,7 +200,7 @@ async function PageShell({ params, searchParams }: { params: Promise<{ slug: str
         {d.back}
       </Link>
       <div className="mt-4">
-        <Suspense fallback={<div className="h-96 animate-pulse rounded-lg bg-brand-light" />}>
+        <Suspense fallback={<LoadingBlock className="min-h-96" />}>
           <Area params={params} searchParams={searchParams} />
         </Suspense>
       </div>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useDict } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 
@@ -10,15 +11,6 @@ export function SignOutButton() {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
-  const cancelRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (!confirming) return;
-    cancelRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && setConfirming(false);
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [confirming, busy]);
 
   async function signOut() {
     setBusy(true);
@@ -36,42 +28,16 @@ export function SignOutButton() {
         {d.common.signOut}
       </button>
       {confirming && (
-        <div
-          className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 px-4"
-          onClick={() => !busy && setConfirming(false)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="signout-title"
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm whitespace-normal rounded-xl border border-border bg-background p-5 shadow-xl"
-          >
-            <h2 id="signout-title" className="text-lg font-semibold">
-              {d.signOutDialog.title}
-            </h2>
-            <p className="mt-1 text-sm text-muted">{d.signOutDialog.body}</p>
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                ref={cancelRef}
-                type="button"
-                onClick={() => setConfirming(false)}
-                disabled={busy}
-                className="rounded-lg border border-border px-3 py-2 font-medium hover:bg-brand-light disabled:opacity-60"
-              >
-                {d.signOutDialog.cancel}
-              </button>
-              <button
-                type="button"
-                onClick={signOut}
-                disabled={busy}
-                className="rounded-lg bg-brand px-3 py-2 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
-              >
-                {busy ? d.signOutDialog.busy : d.signOutDialog.confirm}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title={d.signOutDialog.title}
+          body={d.signOutDialog.body}
+          cancelLabel={d.signOutDialog.cancel}
+          confirmLabel={d.signOutDialog.confirm}
+          busyLabel={d.signOutDialog.busy}
+          busy={busy}
+          onCancel={() => setConfirming(false)}
+          onConfirm={signOut}
+        />
       )}
     </>
   );

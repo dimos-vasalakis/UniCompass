@@ -126,6 +126,53 @@ def test_save_and_list(client: TestClient, test_user: uuid.UUID) -> None:
 
     listed = client.get("/api/v1/match/saved", headers=headers).json()
     assert [m["id"] for m in listed] == [saved.json()["id"]]
+    assert listed[0]["department"] == "Informatics"
+    assert listed[0]["university"].startswith("AUEB")
+    assert listed[0]["preferences"]["weights"] == {"safety": 5}
+
+
+def test_save_with_same_idempotency_key_stores_one_row(
+    client: TestClient, test_user: uuid.UUID
+) -> None:
+    dept = department_id(client, "aueb", "aueb-patision", "Informatics")
+    headers = {**auth_header(test_user), "Idempotency-Key": str(uuid.uuid4())}
+    first = client.post(
+        "/api/v1/match/save", json={"department_id": dept}, headers=headers
+    )
+    again = client.post(
+        "/api/v1/match/save", json={"department_id": dept}, headers=headers
+    )
+    assert first.status_code == again.status_code == 201
+    assert first.json()["id"] == again.json()["id"]
+
+    other_key = {**headers, "Idempotency-Key": str(uuid.uuid4())}
+    client.post("/api/v1/match/save", json={"department_id": dept}, headers=other_key)
+    listed = client.get("/api/v1/match/saved", headers=auth_header(test_user)).json()
+    assert len(listed) == 2
+
+
+def test_saved_match_detail_and_delete(
+    client: TestClient, make_user, test_user: uuid.UUID
+) -> None:
+    dept = department_id(client, "aueb", "aueb-patision", "Informatics")
+    headers = auth_header(test_user)
+    match_id = client.post(
+        "/api/v1/match/save", json={"department_id": dept}, headers=headers
+    ).json()["id"]
+
+    detail = client.get(f"/api/v1/match/saved/{match_id}?lang=el", headers=headers)
+    assert detail.status_code == 200
+    assert detail.json()["department"] == "Πληροφορική"
+
+    # Another user can neither read nor delete it.
+    stranger = auth_header(make_user())
+    path = f"/api/v1/match/saved/{match_id}"
+    assert client.get(path, headers=stranger).status_code == 404
+    assert client.delete(path, headers=stranger).status_code == 404
+
+    assert client.delete(path, headers=headers).status_code == 204
+    assert client.get(path, headers=headers).status_code == 404
+    assert client.delete(path, headers=headers).status_code == 404
 
 
 def test_match_results_include_the_students_own_canteen(client: TestClient) -> None:

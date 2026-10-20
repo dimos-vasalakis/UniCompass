@@ -192,5 +192,9 @@ export type MatchResponse = {
 export type SavedMatch = {
   id: string;
   department_id: string;
+  department: string;
+  university: string; // short name
+  created_at: string;
+  preferences: MatchRequest;
   results: MatchArea[];
 };

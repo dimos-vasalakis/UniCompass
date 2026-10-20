@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useDict } from "@/lib/i18n/client";
 import { safeNext } from "@/lib/redirect";
 import { createClient } from "@/lib/supabase/client";
+import { Spinner } from "@/components/Spinner";
 
 type Mode = "signin" | "signup";
 
@@ -178,8 +179,10 @@ export function AuthForm({ mode, configured }: { mode: Mode; configured: boolean
             <button
               type="submit"
               disabled={busy}
-              className="rounded-lg bg-brand px-3 py-2.5 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+              aria-busy={busy}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-3 py-2.5 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
             >
+              {busy && <Spinner size={16} className="text-white" decorative />}
               {busy ? d.auth.sending : copy.email}
             </button>
           </form>

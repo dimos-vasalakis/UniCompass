@@ -60,3 +60,24 @@ textarea {
   background: var(--accent);
   color: var(--foreground);
 }
+
+/* Spinner.tsx: each spoke rotates around the spinner's centre and fades from full to faint. */
+.spinner-spoke {
+  transform-origin: 50% calc(50% / 0.28);
+  animation: spinner-fade 1s linear infinite;
+}
+
+@keyframes spinner-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.15;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner-spoke {
+    animation-duration: 2.4s;
+  }
+}
