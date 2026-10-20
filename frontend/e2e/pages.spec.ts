@@ -71,3 +71,14 @@ test("area page shows the metro station and reveals its lines on click", async (
   await expect(page.getByRole("list", { name: /^Lines at / })).toBeVisible();
   await expect(page.getByText(/line$/).first()).toBeVisible();
 });
+
+test("area page has a map with the area and its metro station", async ({ page }) => {
+  await page.goto("/neighborhoods/zografou");
+  await expect(page.getByRole("heading", { name: "Map", exact: true })).toBeVisible();
+  await expect(page.locator(".leaflet-tile-loaded").first()).toBeVisible();
+  await expect(page.locator(".leaflet-marker-icon").filter({ hasText: /^⌂$/ })).toHaveCount(1);
+  const station = page.locator(".leaflet-marker-icon").filter({ hasText: /^Μ$/ });
+  await expect(station).toHaveCount(1);
+  await station.dispatchEvent("click");
+  await expect(page.locator(".leaflet-overlay-pane path").first()).toBeVisible();
+});

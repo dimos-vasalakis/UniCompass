@@ -1,10 +1,6 @@
 import { fmt } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/en";
-import type { Canteen, NearbyPlace } from "@/types";
-
-export function walkLabel(d: Dictionary, p: NearbyPlace): string {
-  return fmt(d.daily.walk, { n: p.walk_minutes });
-}
+import type { Canteen } from "@/types";
 
 // Canteen times are always estimates, hence the "~".
 export function canteenLabel(d: Dictionary, c: Canteen): string {

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import AreaMap, { type MapPoint } from "@/components/Map";
 import { ProsCons } from "@/components/ProsCons";
 import { ApiError, apiFetch } from "@/lib/api/client";
-import { canteenLabel, walkLabel } from "@/lib/dailyLife";
+import { canteenLabel } from "@/lib/dailyLife";
 import { FACTOR_KEYS } from "@/lib/factors";
 import { useDict, useLocale } from "@/lib/i18n/client";
 import { areaNames, fmt, type Locale } from "@/lib/i18n/config";
@@ -463,22 +463,22 @@ function Results({
     // Each area's nearest supermarket plus its closest gyms and canteens. Areas can share one, with
     // different travel times, so a shared pin lists the time for each area.
     const places = new Map<string, { kind: "supermarket" | "gym" | "canteen"; name: string; lat: number; lng: number; times: string[] }>();
-    const addPlace = (kind: "supermarket" | "gym" | "canteen", name: string, lat: number, lng: number, rank: number, time: string) => {
+    const addPlace = (kind: "supermarket" | "gym" | "canteen", name: string, lat: number, lng: number, rank: number, time?: string) => {
       const key = `${kind}:${lat},${lng}`;
       const entry = places.get(key) ?? { kind, name, lat, lng, times: [] };
-      entry.times.push(`${rank}: ${time}`);
+      if (time) entry.times.push(`${rank}: ${time}`);
       places.set(key, entry);
     };
     results.forEach((r, i) => {
       const dl = r.daily_life;
       if (!dl) return;
-      if (dl.supermarket) addPlace("supermarket", dl.supermarket.name, dl.supermarket.lat, dl.supermarket.lng, i + 1, walkLabel(d, dl.supermarket));
-      for (const g of dl.gyms ?? []) addPlace("gym", g.name, g.lat, g.lng, i + 1, walkLabel(d, g));
+      if (dl.supermarket) addPlace("supermarket", dl.supermarket.name, dl.supermarket.lat, dl.supermarket.lng, i + 1);
+      for (const g of dl.gyms ?? []) addPlace("gym", g.name, g.lat, g.lng, i + 1);
       for (const c of dl.canteens ?? []) addPlace("canteen", areaNames(locale, c)[0], c.lat, c.lng, i + 1, canteenLabel(d, c));
     });
     for (const [key, { kind, name, lat, lng, times }] of places) {
       const badge = { supermarket: "🛒", gym: "🏋️", canteen: "🍽️" }[kind];
-      p.push({ key, label: `${name} · ${times.join(" · ")}`, lat, lng, kind, badge });
+      p.push({ key, label: times.length ? `${name} · ${times.join(" · ")}` : name, lat, lng, kind, badge });
     }
     // One station per area, shared when areas have the same nearest one.
     const stations = new Map<string, MapPoint>();
@@ -619,19 +619,7 @@ function ResultCard({
       </dl>
 
       {area.daily_life && (
-        <dl className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-          {area.daily_life.nearby_loaded && (
-            <>
-              <Stat
-                label={d.daily.nearestSupermarket}
-                value={area.daily_life.supermarket ? walkLabel(d, area.daily_life.supermarket) : d.daily.noneClose}
-              />
-              <Stat
-                label={d.daily.nearestGym}
-                value={area.daily_life.gym ? walkLabel(d, area.daily_life.gym) : d.daily.noneClose}
-              />
-            </>
-          )}
+        <dl className="mt-3 grid grid-cols-1 gap-3 text-sm ">
           <Stat
             label={d.daily.canteenTile}
             value={area.daily_life.canteen ? canteenLabel(d, area.daily_life.canteen) : "—"}

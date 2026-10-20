@@ -2,11 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ProsCons } from "@/components/ProsCons";
+import AreaMap, { type MapPoint } from "@/components/Map";
 import { MetroCard } from "@/components/MetroCard";
 import { ScoreBar } from "@/components/ScoreBar";
 import { ApiUnavailable } from "@/components/ApiUnavailable";
 import { tryGetPublic } from "@/lib/api/server";
-import { canteenLabel, mapsUrl, walkLabel } from "@/lib/dailyLife";
+import { canteenLabel, mapsUrl } from "@/lib/dailyLife";
 import { SCORE_KEYS } from "@/lib/factors";
 import { areaNames, fmt } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/en";
@@ -22,7 +23,7 @@ function Minutes({ d, t }: { d: Dictionary; t: TravelTime }) {
   );
 }
 
-function PlaceList({ d, title, places, empty }: { d: Dictionary; title: string; places: NearbyPlace[]; empty: string }) {
+function PlaceList({ title, places, empty }: { title: string; places: NearbyPlace[]; empty: string }) {
   return (
     <div>
       <h3 className="mb-2 font-semibold">{title}</h3>
@@ -31,11 +32,10 @@ function PlaceList({ d, title, places, empty }: { d: Dictionary; title: string; 
       ) : (
         <ul className="divide-y divide-border text-sm">
           {places.map((p) => (
-            <li key={`${p.lat},${p.lng}`} className="flex justify-between gap-3 py-2">
+            <li key={`${p.lat},${p.lng}`} className="py-2">
               <a href={mapsUrl(p.lat, p.lng)} target="_blank" rel="noreferrer" className="text-brand hover:underline">
                 {p.name}
               </a>
-              <span className="shrink-0 whitespace-nowrap tabular-nums">{walkLabel(d, p)}</span>
             </li>
           ))}
         </ul>
@@ -54,6 +54,22 @@ async function Area({ params }: { params: Promise<{ slug: string }> }) {
 
   const campuses = n.travel_times.filter((t) => t.destination_type === "campus");
   const hubs = n.travel_times.filter((t) => t.destination_type === "hub");
+  const points: MapPoint[] = [
+    { key: "area", label: areaNames(locale, n)[0], lat: n.lat, lng: n.lng, kind: "area", badge: "⌂" },
+    ...n.supermarkets.map((p): MapPoint => ({ key: `s:${p.lat},${p.lng}`, label: p.name, lat: p.lat, lng: p.lng, kind: "supermarket", badge: "🛒" })),
+    ...n.gyms.map((p): MapPoint => ({ key: `g:${p.lat},${p.lng}`, label: p.name, lat: p.lat, lng: p.lng, kind: "gym", badge: "🏋️" })),
+  ];
+  if (n.metro) {
+    points.push({
+      key: `metro:${n.metro.station.slug}`,
+      label: `${d.metro.heading}: ${n.metro.station.name} · ${n.metro.lines.map((l) => l.code).join(", ")}`,
+      lat: n.metro.station.lat,
+      lng: n.metro.station.lng,
+      kind: "metro",
+      badge: "Μ",
+      metro: n.metro,
+    });
+  }
   const anyEstimated = n.travel_times.some((t) => t.estimated);
 
   return (
@@ -81,6 +97,14 @@ async function Area({ params }: { params: Promise<{ slug: string }> }) {
         ))}
       </section>
 
+      <section>
+        <h2 className="mb-3 text-xl font-semibold">{d.area.mapHeading}</h2>
+        <div className="h-80 lg:h-[420px]">
+          <AreaMap points={points} fitAll />
+        </div>
+        <p className="mt-2 text-xs text-muted">{d.area.mapLegend}</p>
+      </section>
+
       {n.metro && <MetroCard metro={n.metro} />}
 
       <section>
@@ -88,8 +112,8 @@ async function Area({ params }: { params: Promise<{ slug: string }> }) {
         <div className={`grid gap-8 ${n.nearby_loaded ? "md:grid-cols-3" : ""}`}>
           {n.nearby_loaded && (
             <>
-              <PlaceList d={d} title={d.daily.supermarkets} places={n.supermarkets} empty={d.daily.noSupermarkets} />
-              <PlaceList d={d} title={d.daily.gyms} places={n.gyms} empty={d.daily.noGyms} />
+              <PlaceList title={d.daily.supermarkets} places={n.supermarkets} empty={d.daily.noSupermarkets} />
+              <PlaceList title={d.daily.gyms} places={n.gyms} empty={d.daily.noGyms} />
             </>
           )}
           <div>
