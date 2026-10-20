@@ -81,6 +81,9 @@ export type DailyLife = {
   supermarket: NearbyPlace | null;
   gym: NearbyPlace | null;
   canteen: Canteen | null;
+  // Missing on matches saved before these existed.
+  gyms?: NearbyPlace[];
+  canteens?: Canteen[];
 };
 
 export type MetroLine = {
@@ -91,6 +94,8 @@ export type MetroLine = {
   name: string;
   from_station: string;
   to_station: string;
+  /** [lat, lng] of every station on the line, in order. */
+  path: [number, number][];
 };
 
 export type Metro = {
@@ -142,6 +147,7 @@ export type MatchArea = {
   cons: Point[];
   // Missing on matches saved before this existed.
   daily_life?: DailyLife | null;
+  metro?: Metro | null;
 };
 
 export type MatchResponse = {

@@ -33,6 +33,15 @@ test("NTUA student who cares about commute and rent gets eastern areas", async (
   // Map: 3 numbered pins + campus pin (nearby supermarket/gym/canteen pins come on top), with tiles loaded.
   await expect(page.locator(".leaflet-marker-icon").filter({ hasText: /^[123🎓]$/u })).toHaveCount(4);
   await expect(page.locator(".leaflet-tile-loaded").first()).toBeVisible();
+
+  // Metro station pins: clicking one draws its lines (coloured paths), clicking again hides them.
+  const station = page.locator(".leaflet-marker-icon").filter({ hasText: /^Μ$/ }).first();
+  await expect(station).toBeVisible();
+  await expect(page.locator(".leaflet-overlay-pane path")).toHaveCount(0);
+  await station.dispatchEvent("click"); // pins can overlap after the map re-fits
+  await expect(page.locator(".leaflet-overlay-pane path").first()).toBeVisible();
+  await station.dispatchEvent("click"); // pins can overlap after the map re-fits
+  await expect(page.locator(".leaflet-overlay-pane path")).toHaveCount(0);
 });
 
 test("getting home via the port favours Piraeus-side areas", async ({ page }) => {

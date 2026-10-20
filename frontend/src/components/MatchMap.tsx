@@ -4,13 +4,16 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useRef } from "react";
 import { useDict } from "@/lib/i18n/client";
+import type { Metro } from "@/types";
 
 export type MapPoint = {
   key: string;
   label: string;
   lat: number;
   lng: number;
-  kind: "area" | "campus" | "hub" | "supermarket" | "gym" | "canteen";
+  kind: "area" | "campus" | "hub" | "supermarket" | "gym" | "canteen" | "metro";
+  /** Metro stations: clicking one draws the lines serving it. */
+  metro?: Metro;
   /** Shown inside the pin: the result rank for areas. */
   badge?: string;
 };
@@ -31,8 +34,9 @@ function pin(p: MapPoint): L.DivIcon {
     supermarket: "background:#fff;color:#1c2b22;border:2px solid #3a7851;width:22px;height:22px;font-size:12px",
     gym: "background:#fff;color:#1c2b22;border:2px solid #3a7851;width:22px;height:22px;font-size:12px",
     canteen: "background:#fff;color:#1c2b22;border:2px solid #eebc50;width:22px;height:22px;font-size:12px",
+    metro: "background:#fff;color:#1c2b22;border:2px solid #0072bc;width:24px;height:24px;font-size:13px",
   }[p.kind];
-  const size = { area: 28, campus: 30, hub: 24, supermarket: 22, gym: 22, canteen: 22 }[p.kind];
+  const size = { area: 28, campus: 30, hub: 24, supermarket: 22, gym: 22, canteen: 22, metro: 24 }[p.kind];
   const icon = L.divIcon({
     className: "",
     html: `<div style="${styles};border-radius:9999px;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.35)">${p.badge ?? ""}</div>`,
@@ -50,7 +54,7 @@ function tooltipText(label: string): HTMLElement {
   return span;
 }
 
-const isPlace = (p: MapPoint) => p.kind === "supermarket" || p.kind === "gym" || p.kind === "canteen";
+const isPlace = (p: MapPoint) => p.kind === "supermarket" || p.kind === "gym" || p.kind === "canteen" || p.kind === "metro";
 
 // The map is built imperatively in one effect rather than with react-leaflet's
 // <MapContainer>: React re-runs effects when a hidden tree is shown again, and
@@ -67,13 +71,44 @@ export default function MatchMap({ points }: { points: MapPoint[] }) {
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
+    const lineLayer = L.layerGroup().addTo(map);
+    let selected: string | null = null;
+    let viewBefore: { center: L.LatLng; zoom: number } | null = null;
+    const hideLines = () => {
+      lineLayer.clearLayers();
+      selected = null;
+      // Undo the zoom-to-lines so the areas are back in view.
+      if (viewBefore) map.setView(viewBefore.center, viewBefore.zoom);
+      viewBefore = null;
+    };
+    // Click a station to draw the lines through it (white casing under the colour so
+    // they stay readable on the map); click it again, or the map, to hide them.
+    const showLines = (p: MapPoint) => {
+      if (!p.metro || selected === p.key) {
+        hideLines();
+        return;
+      }
+      lineLayer.clearLayers();
+      viewBefore ??= { center: map.getCenter(), zoom: map.getZoom() };
+      selected = p.key;
+      for (const l of p.metro.lines) {
+        L.polyline(l.path, { color: "#fff", weight: 9, opacity: 0.9, interactive: false }).addTo(lineLayer);
+        L.polyline(l.path, { color: l.hex, weight: 5, opacity: 0.95 })
+          .bindTooltip(tooltipText(`${l.code} · ${l.name}: ${l.from_station} – ${l.to_station}`), { sticky: true })
+          .addTo(lineLayer);
+      }
+      const all = p.metro.lines.flatMap((l) => l.path);
+      if (all.length) map.fitBounds(all, { padding: [30, 30] });
+    };
+    map.on("click", hideLines);
     for (const p of points) {
-      L.marker([p.lat, p.lng], {
+      const marker = L.marker([p.lat, p.lng], {
         icon: pin(p),
         zIndexOffset: p.kind === "area" ? 1000 : isPlace(p) ? -500 : 0,
       })
         .bindTooltip(tooltipText(p.label), { direction: "top", offset: [0, -14] })
         .addTo(map);
+      if (p.kind === "metro") marker.on("click", () => showLines(p));
     }
     // Fit the map to the areas, campus and hub only: a far-away shop shouldn't zoom it out.
     const bounds = points.filter((p) => !isPlace(p)).map((p) => [p.lat, p.lng] as [number, number]);

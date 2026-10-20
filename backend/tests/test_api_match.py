@@ -65,6 +65,9 @@ def test_match_ntua_commute_and_rent(client: TestClient) -> None:
     body = res.json()
     assert len(body["results"]) == 3
     assert body["considered"] == 49
+    for r in body["results"]:
+        line = r["metro"]["lines"][0]
+        assert len(line["path"]) > 2 and len(line["path"][0]) == 2
     top = [r["slug"] for r in body["results"]]
     eastern = {
         "zografou",

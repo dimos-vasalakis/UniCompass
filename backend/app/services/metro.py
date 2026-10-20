@@ -5,7 +5,7 @@ from functools import cache
 from pathlib import Path
 
 from app.core.lang import Lang, pick
-from app.schemas.places import MetroLineOut, MetroOut, MetroStationOut
+from app.schemas.metro import MetroLineOut, MetroOut, MetroStationOut
 from app.services.geo import haversine_km, walk_minutes
 
 DATA = Path(__file__).resolve().parent.parent.parent / "data" / "metro"
@@ -42,6 +42,7 @@ def nearest_station(
             name=pick(lang, line["name"], line.get("name_el")),
             from_station=name(line["stations"][0]),
             to_station=name(line["stations"][-1]),
+            path=[(stations[x]["lat"], stations[x]["lng"]) for x in line["stations"]],
         )
         for line in data["lines"]
         if best["slug"] in line["stations"]

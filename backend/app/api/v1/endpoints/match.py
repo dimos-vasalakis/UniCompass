@@ -14,6 +14,7 @@ from app.schemas.match import (
 )
 from app.services import places
 from app.services.matching import match as run_match
+from app.services.metro import nearest_station
 
 router = APIRouter(prefix="/match", tags=["match"])
 
@@ -29,6 +30,8 @@ async def _run(body: MatchRequest, db: DbSession, lang: Lang) -> MatchResponse:
     results, within = run_match(areas, body)
     university = await db.get(University, department.university_id)
     await places.attach_daily_life(db, results, university.slug)
+    for area in results:
+        area.metro = nearest_station(area.lat, area.lng, lang)
     return MatchResponse(results=results, considered=len(areas), within_limits=within)
 
 

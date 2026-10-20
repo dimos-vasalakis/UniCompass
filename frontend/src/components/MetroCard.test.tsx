@@ -8,8 +8,8 @@ import { MetroCard } from "./MetroCard";
 const metro: Metro = {
   station: { slug: "syntagma", name: "Syntagma", lat: 37.9755, lng: 23.7348 },
   lines: [
-    { slug: "m2", code: "M2", color: "red", hex: "#e31e24", name: "Red line", from_station: "Anthoupoli", to_station: "Elliniko" },
-    { slug: "m3", code: "M3", color: "blue", hex: "#0072bc", name: "Blue line", from_station: "Dimotiko Theatro", to_station: "Athens Airport" },
+    { slug: "m2", code: "M2", color: "red", hex: "#e31e24", name: "Red line", from_station: "Anthoupoli", to_station: "Elliniko", path: [] },
+    { slug: "m3", code: "M3", color: "blue", hex: "#0072bc", name: "Blue line", from_station: "Dimotiko Theatro", to_station: "Athens Airport", path: [] },
   ],
   distance_m: 400,
   walk_minutes: 6,

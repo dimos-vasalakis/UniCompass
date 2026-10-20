@@ -301,6 +301,10 @@ async def get_neighborhood(
     )
 
 
+MAP_GYMS = 2
+MAP_CANTEENS = 3
+
+
 async def attach_daily_life(
     db: AsyncSession, areas: list[MatchArea], university_slug: str
 ) -> None:
@@ -312,13 +316,16 @@ async def attach_daily_life(
     for area in areas:
         mine = nearby[area.slug]
         canteen = _canteens_near(canteens, area.lat, area.lng, university_slug)
+        gyms = [_place_out(p) for p in mine if p.kind == "gym"]
         area.daily_life = DailyLife(
             nearby_loaded=loaded,
             supermarket=next(
                 (_place_out(p) for p in mine if p.kind == "supermarket"), None
             ),
-            gym=next((_place_out(p) for p in mine if p.kind == "gym"), None),
+            gym=gyms[0] if gyms else None,
             canteen=canteen[0] if canteen else None,
+            gyms=gyms[:MAP_GYMS],
+            canteens=canteen[:MAP_CANTEENS],
         )
 
 

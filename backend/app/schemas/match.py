@@ -4,6 +4,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 
 from app.schemas.daily_life import DailyLife
+from app.schemas.metro import MetroOut
 
 Factor = Literal[
     "safety",
@@ -56,6 +57,7 @@ class MatchArea(BaseModel):
     pros: list[Point]
     cons: list[Point]
     daily_life: DailyLife | None = None
+    metro: MetroOut | None = None
 
 
 class MatchResponse(BaseModel):

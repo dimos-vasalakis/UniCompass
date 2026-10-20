@@ -30,3 +30,6 @@ class DailyLife(BaseModel):
     supermarket: NearbyPlaceOut | None = None
     gym: NearbyPlaceOut | None = None
     canteen: CanteenOut | None = None
+    # Closest first; the first of each is `gym` / `canteen`. For the map.
+    gyms: list[NearbyPlaceOut] = []
+    canteens: list[CanteenOut] = []

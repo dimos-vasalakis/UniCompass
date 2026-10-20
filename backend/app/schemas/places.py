@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from app.schemas.daily_life import CanteenOut, NearbyPlaceOut
 from app.schemas.match import Point
+from app.schemas.metro import MetroOut
 
 
 class CampusOut(BaseModel):
@@ -35,33 +36,6 @@ class HubOut(BaseModel):
     serves: str
     lat: float
     lng: float
-
-
-class MetroStationOut(BaseModel):
-    slug: str
-    name: str
-    lat: float
-    lng: float
-
-
-class MetroLineOut(BaseModel):
-    slug: str
-    code: str  # M1, M2, M3
-    color: str  # green, red, blue
-    hex: str
-    name: str
-    from_station: str
-    to_station: str
-
-
-class MetroOut(BaseModel):
-    """The metro station closest to a neighborhood and the lines serving it."""
-
-    station: MetroStationOut
-    lines: list[MetroLineOut]
-    distance_m: int
-    walk_minutes: int
-    in_area: bool  # False: the area has no station of its own, this is the nearest
 
 
 class Scores(BaseModel):
