@@ -1,6 +1,6 @@
 # UniCompass
 
-Helps students who passed the Panhellenic exams settle into their new university city. A student picks their department and priorities (rent, commute, nightlife, safety…) and gets the three Athens neighborhoods that fit them best, with guides for each area, plus the nearest supermarket, gym and student restaurant (φοιτητική λέσχη) of their own university. The site is available in English and Greek.
+Helps students who passed the Panhellenic exams settle into their new university city. A student picks their department and priorities (rent, commute, nightlife, safety…) and gets the three Athens neighborhoods that fit them best, with guides for each area, plus nearby supermarkets, gyms, the nearest metro station and the student restaurant (φοιτητική λέσχη) of their own university. Each guide also explains how to get to the campus: on foot, by metro (with line changes) and by bus. The site is available in English and Greek.
 
 | Layer     | Tech                         | Hosting  |
 | --------- | ---------------------------- | -------- |
@@ -190,6 +190,8 @@ python -m scripts.clear_cache            # drop cached reference data (Upstash) 
 
 Until the Google script runs, travel times are distance-based estimates, and the UI marks them with `~`. Supermarkets and gyms stay empty until `compute_nearby` runs; re-run it now and then, as shops open and close. Student restaurants are curated in `athens.json` (`student_canteens`). A match shows only the chosen university's own restaurant, and none if that university has none.
 
+**Metro.** `backend/data/metro/athens.json` lists the lines (M1 green, M2 red, M3 blue, stations in order) and every station with its coordinates. It is read straight from the file: no migration or seed step, and `test_metro.py` checks it. Each area gets its nearest station (flagged as "in the area" within 1 km), and the map draws a line as straight segments between its stations. Trips to a campus (`GET /neighborhoods/{slug}/route?campus=<slug>`) are found in `services/routing.py`: walking, metro with line changes (Dijkstra over station/line pairs; about 2.5 min per stop, 4 per change, 3 waiting) and the stored bus estimate. Check the coordinates and line orders against an official map when you edit it.
+
 **Greek.** `backend/data/athens.el.json` holds the Greek names, departments, hubs, area descriptions and pros/cons, in the same order as the English. `seed` loads them into `*_el` columns and English is the fallback where one is missing. Adding a department, pro or con in `athens.json` fails `test_data.py` until its Greek is added.
 
 ## Languages
@@ -211,13 +213,13 @@ Autogenerate only covers tables and columns. Write RLS policies, grants and trig
 1. **Sign-in.** Users sign in on the frontend through Supabase Auth: Google, GitHub or an email magic link. `/auth/callback` swaps the code for a session cookie, and `src/proxy.ts` refreshes it and protects `/dashboard`.
 2. **API calls.** The frontend sends the Supabase access token to the backend as `Authorization: Bearer …`. The backend verifies it with Supabase's JWKS (or the legacy HS256 secret).
 3. **Database access.** The backend talks to Postgres directly with async SQLAlchemy through the pooler. That connection bypasses RLS, so every query filters by the user's id itself. Users can edit only `full_name`/`role` of their own profile through Supabase directly; billing fields like `is_premium` are written only by the backend's Stripe webhook.
-4. **Caching.** Reference data (areas, universities, hubs, canteens) is cached in Upstash for 6 hours, keyed by language, and profiles for 5 minutes. Nearby supermarkets and gyms are never cached. Reseeding clears the cache.
-5. **Map.** `src/components/MatchMap.tsx` builds the Leaflet map imperatively in one effect (react-leaflet's `MapContainer` crashed when React re-ran effects). Pins: numbered areas, campus, hub, and nearby supermarket/gym/canteen; the view fits only the areas, campus and hub.
+4. **Caching.** Reference data (areas, universities, hubs, canteens, campus routes) is cached in Upstash for 6 hours, keyed by language, and profiles for 5 minutes. Nearby supermarkets and gyms are never cached. Reseeding clears the cache.
+5. **Map.** `src/components/MatchMap.tsx` builds the Leaflet map imperatively in one effect (react-leaflet's `MapContainer` crashed when React re-ran effects). It is used on the match results and on every area page. Pins: numbered areas, campus, hub, supermarkets, gyms, canteens and the nearest metro station (Μ); tapping a station draws its lines. Supermarkets and gyms show no walking times, because the student's home isn't known. On match results the view fits only the areas, campus and hub; an area page fits every pin. "Full guide" links carry `?campus=<slug>`, which adds the route section (`RouteGuide.tsx`) to the area page.
 
 ```
 frontend/                 Next.js app
   src/app/                routes: /, /match, /neighborhoods, /login, /signup, /auth/callback, /dashboard, /pricing
-  src/components/         shared UI (AuthForm, MatchMap, score bars, language toggle, …)
+  src/components/         shared UI (AuthForm, MatchMap, MetroCard, RouteGuide, score bars, language toggle, …)
   src/lib/i18n/           English/Greek dictionaries and locale helpers
   src/lib/supabase/       browser, server and proxy Supabase clients
   src/lib/api/            fetch helpers for the backend
@@ -227,10 +229,11 @@ mobile/                    Expo app (src/app routes, src/lib Supabase + API clie
 backend/                  FastAPI app
   app/api/v1/endpoints/   health, users, billing (+ Stripe webhook), places, match
   app/core/               settings, DB engine, JWT verification
-  app/services/           matching (pure), places, billing, cache, email
+  app/services/           matching, metro, routing (pure), places, billing, cache, email
   app/models/, schemas/   SQLAlchemy models, Pydantic API models
   alembic/                migrations
   data/athens.json        area/university/hub/canteen data (athens.el.json: Greek text)
+  data/metro/athens.json  metro lines and stations
   scripts/                seed, compute_travel_times, compute_nearby, clear_cache
 render.yaml               Render blueprint
 ```

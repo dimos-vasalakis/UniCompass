@@ -23,7 +23,7 @@ export const en = {
     neighborhoodsTitle: "Athens areas for students · UniCompass",
     neighborhoodsDescription: "Every Athens neighborhood students live in, with rents, pros and cons.",
     matchTitle: "Find your area in Athens · UniCompass",
-    matchDescription: "Tell us what matters to you and get the 3 Athens neighborhoods that fit you best.",
+    matchDescription: "Set your priorities and get the 3 Athens neighborhoods best suited to your needs.",
     signInTitle: "Sign in · UniCompass",
     signUpTitle: "Create account · UniCompass",
   },
@@ -39,7 +39,7 @@ export const en = {
     city: "Athens",
     titleAfter: "? Find where to live.",
     intro:
-      "You don't know the city yet, and that's fine. Tell us what matters to you and we'll show you the neighborhoods that fit you best. Free, no account needed.",
+      "Choosing where to live in an unfamiliar city is a major decision. Set your priorities, and UniCompass recommends the neighborhoods best suited to your department, your budget and your lifestyle.",
     cta: "Find my area",
     browse: "Browse all areas",
     steps: [
