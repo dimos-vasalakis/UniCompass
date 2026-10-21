@@ -396,3 +396,29 @@ def test_stale_pending_check_with_another_key_is_released(
     res = client.post(URL, json={"text": "edited flat"}, headers=auth_header(test_user))
     assert res.status_code == 201
     assert _used(test_user) == 1
+
+
+@pytest.mark.parametrize(
+    ("rent", "size", "verdict"),
+    [
+        (7900, 182, "overpriced"),  # luxury flat: 43€/m² vs ~23€/m² for a studio
+        (1300, 70, "fair"),  # a flat for 2–3 students at the area's rate
+        (450, 30, "fair"),
+        (2500, None, "overpriced"),  # no size: over 3× a studio
+        (1200, None, "fair"),
+    ],
+)
+def test_far_above_area_is_never_fair(
+    rent: int, size: int | None, verdict: str
+) -> None:
+    ctx = CheckContext([_area("kifisia", 700)], None, None)
+    analysis = _analysis("kifisia", rent)
+    analysis.details.size_m2 = size
+    assert build_result(analysis, ctx, [], "en").verdict == verdict
+
+
+def test_suspicious_verdict_is_kept() -> None:
+    ctx = CheckContext([_area("kifisia", 700)], None, None)
+    analysis = _analysis("kifisia", 7900)
+    analysis.verdict = "suspicious"
+    assert build_result(analysis, ctx, [], "en").verdict == "suspicious"

@@ -133,7 +133,12 @@ export function ListingCheckForm({
 
   return (
     <div className="space-y-6">
-      <p className={`text-sm font-medium ${none ? "text-danger" : "text-muted"}`}>
+      {/* A pill so the count is hard to miss; the last check gets the accent colour. */}
+      <p
+        className={`inline-block rounded-full px-4 py-1.5 text-base font-semibold ${
+          none ? "bg-danger text-white" : remaining === 1 ? "bg-accent text-[#1c2b22]" : "bg-brand-light text-brand ring-1 ring-brand/30"
+        }`}
+      >
         {none ? fmt(d.noneLeft, { limit }) : remaining === 1 ? d.remainingOne : fmt(d.remaining, { remaining })}
       </p>
 

@@ -126,13 +126,18 @@ invent facts about the flat. When the listing doesn't state something, leave \
 that field null and, if it matters, add it to questions_for_landlord.
 - area_slug must be one of the slugs in the area table, or null if the \
 listing doesn't make the area clear.
-- verdict: "good" (fair or low price for the area and no warning signs), \
-"fair" (roughly typical), "overpriced" (clearly above typical for its size \
-and area), "suspicious" (scam warning signs). If the content isn't a rental \
-listing at all, set is_listing false, verdict "not_a_listing", explain \
+- Judge everything from the student's side: is this a sensible place for a \
+student to rent? Never call a price fair just because it matches a luxury \
+flat's size or features.
+- verdict: "good" (at or below what students pay for that size in the area, \
+no warning signs), "fair" (roughly typical), "overpriced" (clearly above what \
+students pay for that size in the area, or far beyond a student budget), \
+"suspicious" (scam warning signs; takes priority). If the content isn't a \
+rental listing at all, set is_listing false, verdict "not_a_listing", explain \
 briefly in summary and leave the lists empty.
-- The table's typical rent is for a studio (γκαρσονιέρα). Scale your judgment \
-for bigger flats rather than comparing directly.
+- The table's typical rent is for a studio (γκαρσονιέρα) of about \
+30 m². For bigger flats compare the price per m² with that (a flat shared by \
+2–3 students can fairly cost 2–3 times a studio), not the size or luxury.
 - Common scam signs in Greece: a deposit or "reservation fee" asked before \
 any viewing; the owner is abroad and will post the keys; a price far below \
 the area's typical rent; refusing a lease registered on Taxisnet; pressure to \
@@ -333,9 +338,27 @@ def build_result(
     known = {a.slug for a in ctx.areas}
     if analysis.details.area_slug not in known:
         analysis.details.area_slug = None
-    return ListingCheckResult(
-        **analysis.model_dump(), area=area_facts(analysis, ctx, canteens, lang)
-    )
+    area = area_facts(analysis, ctx, canteens, lang)
+    if analysis.verdict in ("good", "fair") and _far_above_area(analysis, area):
+        # Our numbers overrule the model: the badge must not call this fair.
+        analysis.verdict = "overpriced"
+    return ListingCheckResult(**analysis.model_dump(), area=area)
+
+
+STUDIO_M2 = 30  # the size the area table's "typical studio rent" stands for
+# Far enough above the area that no student-facing verdict can be "fair".
+OVERPRICED_PER_M2 = 1.5  # per m², vs a studio in the area
+OVERPRICED_NO_SIZE = 3.0  # total rent, when the listing gives no size
+
+
+def _far_above_area(analysis: ListingAnalysis, area: AreaFacts | None) -> bool:
+    rent, size = analysis.details.rent_eur, analysis.details.size_m2
+    if area is None or not rent or not area.typical_studio_rent:
+        return False
+    if size:
+        studio_per_m2 = area.typical_studio_rent / STUDIO_M2
+        return rent / size > studio_per_m2 * OVERPRICED_PER_M2
+    return rent > area.typical_studio_rent * OVERPRICED_NO_SIZE
 
 
 # Quota. One UPDATE checks and spends a check atomically, so two concurrent

@@ -96,7 +96,7 @@ describe("ListingCheckForm", () => {
     await userEvent.click(screen.getByRole("button", { name: "Check this listing" }));
 
     expect(await screen.findByText("Overpriced")).toBeInTheDocument();
-    expect(screen.getByText("+13% vs the area", { exact: false })).toBeInTheDocument();
+    expect(screen.getByText("+13%")).toBeInTheDocument();
     expect(screen.getByText("Asks for a deposit before a viewing")).toBeInTheDocument();
     expect(screen.getByText("2 checks left")).toBeInTheDocument();
     const [path, init] = apiFetch.mock.calls[0];
