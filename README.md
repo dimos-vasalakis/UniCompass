@@ -76,7 +76,7 @@ Everything defaults to empty, so the web apps boot without secrets. Public pages
 | `SENTRY_DSN`                             | Sentry (optional)                                                            |
 | `GOOGLE_MAPS_API_KEY`                    | Only for `scripts/compute_travel_times.py`                                   |
 | `ANTHROPIC_API_KEY`                      | Claude API key for the listing check. Empty: `/assistant` answers 503 "Assistant unavailable" (the rest of the site works) |
-| `ANTHROPIC_MODEL`                        | Optional, default `claude-sonnet-5-5`. `claude-haiku-5-5` is much cheaper but reads screenshots less well |
+| `ANTHROPIC_MODEL`                        | Optional, default `claude-haiku-5-5` (cheapest). `claude-sonnet-5-5` reads screenshots better at about 20× the price |
 | `LISTING_CHECK_LIMIT`                    | Optional, default `3`: checks per account, ever                               |
 | `LISTING_CHECK_FAKE`                     | Optional, `true` for canned answers in local dev without a key (ignored when `ENVIRONMENT=production`) |
 

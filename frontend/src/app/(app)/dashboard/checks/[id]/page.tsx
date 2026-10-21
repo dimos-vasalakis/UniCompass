@@ -34,11 +34,10 @@ async function Check({ params }: { params: Promise<{ id: string }> }) {
   }
   if (!check) notFound();
 
-  // The answer stays in the language it was checked in (labels follow the UI).
   return (
     <>
       <p className="mb-4 text-sm text-muted">{fmt(d.checkedOn, { date: fmtDate(locale, check.created_at) })}</p>
-      <ListingCheckResult result={check.result} lang={check.lang} />
+      <ListingCheckResult result={check.result} />
     </>
   );
 }

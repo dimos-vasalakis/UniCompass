@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.schemas.daily_life import CanteenOut
 from app.schemas.metro import MetroOut
@@ -42,17 +42,27 @@ class ListingDetails(BaseModel):
     area_slug: str | None
 
 
-class ListingAnalysis(BaseModel):
-    """Claude's structured answer (output_format of the Messages API call)."""
+class ListingTexts(BaseModel):
+    """The written part of the answer, in one language."""
 
-    is_listing: bool
-    details: ListingDetails
-    verdict: Verdict
     summary: str
     pros: list[str]
     cons: list[str]
     red_flags: list[str]
     questions_for_landlord: list[str]
+
+
+class ListingAnalysis(BaseModel):
+    """Claude's structured answer (output_format of the Messages API call).
+
+    The text comes in both languages from the one call, so the result follows
+    the language toggle at any time, like the rest of the site."""
+
+    is_listing: bool
+    details: ListingDetails
+    verdict: Verdict
+    en: ListingTexts
+    el: ListingTexts
     # Always Greek: landlords are Greek, whatever the student's UI language.
     landlord_message_el: str
 
@@ -73,6 +83,16 @@ class AreaFacts(BaseModel):
 
 class ListingCheckResult(ListingAnalysis):
     area: AreaFacts | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _single_language(cls, data: Any) -> Any:
+        """Checks stored before both languages existed have one flat set of texts."""
+        if isinstance(data, dict) and "summary" in data and "en" not in data:
+            fields = ListingTexts.model_fields
+            texts = {k: data.pop(k) for k in list(data) if k in fields}
+            data = {**data, "en": texts, "el": texts}
+        return data
 
 
 class ListingCheckOut(BaseModel):

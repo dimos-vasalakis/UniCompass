@@ -30,6 +30,7 @@ from app.schemas.listing_check import (
     ListingCheckRequest,
     ListingCheckResult,
     ListingDetails,
+    ListingTexts,
 )
 from app.services import places
 from app.services.matching import SCORE_FACTORS
@@ -37,8 +38,17 @@ from app.services.metro import nearest_station
 
 logger = logging.getLogger(__name__)
 
-# Server-side refusal fallback ("default" picks the substitute by refusal category).
+# Server-side refusal fallback ("default" picks the substitute by refusal
+# category). Haiku has none, so it's only sent for the bigger models.
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
+
+
+def _fallback_args(model: str) -> dict:
+    if model.startswith("claude-haiku"):
+        return {}
+    return {"betas": [FALLBACK_BETA], "fallbacks": "default"}
+
+
 TIMEOUT_SECONDS = 120.0
 
 
@@ -151,9 +161,10 @@ contract length, deposit, whether the lease will be registered on Taxisnet \
 - landlord_message_el: a short, polite message in Greek the student can send \
 the landlord, asking those questions and requesting a viewing (or a video \
 call if they're not in Athens yet). Always Greek.
-- Write summary, pros, cons, red_flags and questions_for_landlord in the \
-answer language given in the student's message. Keep each item to one \
-sentence. summary: at most 3 sentences.
+- Write summary, pros, cons, red_flags and questions_for_landlord twice, with \
+the same content: in English under "en" and in natural Greek under "el" \
+(whatever language the listing is in). Keep each item to one sentence. \
+summary: at most 3 sentences.
 """
 
 
@@ -174,7 +185,7 @@ def _area_table(ctx: CheckContext) -> str:
     return "Area table:\n" + head + "\n" + "\n".join(rows)
 
 
-def _user_content(req: ListingCheckRequest, lang: Lang) -> list[dict]:
+def _user_content(req: ListingCheckRequest) -> list[dict]:
     content: list[dict] = [
         {
             "type": "image",
@@ -186,7 +197,7 @@ def _user_content(req: ListingCheckRequest, lang: Lang) -> list[dict]:
         }
         for img in req.images
     ]
-    text = f"Answer language: {'Greek' if lang == 'el' else 'English'}.\n"
+    text = ""
     if req.images:
         text += (
             f"The {len(req.images)} image(s) above are screenshots of the listing.\n"
@@ -223,8 +234,7 @@ class ClaudeAnalyzer:
             response = await self.client.beta.messages.parse(
                 model=self.model,
                 max_tokens=16000,
-                betas=[FALLBACK_BETA],
-                fallbacks="default",
+                **_fallback_args(self.model),
                 output_config={"effort": "medium"},
                 # Instructions never change and the area table only per campus
                 # and language, so both stay a cacheable prefix.
@@ -236,7 +246,7 @@ class ClaudeAnalyzer:
                         "cache_control": {"type": "ephemeral"},
                     },
                 ],
-                messages=[{"role": "user", "content": _user_content(req, lang)}],
+                messages=[{"role": "user", "content": _user_content(req)}],
                 output_format=ListingAnalysis,
             )
         except (anthropic.APIError, ValidationError, ValueError) as e:
@@ -258,7 +268,6 @@ class FakeAnalyzer:
         text = (req.text or "").lower()
         area = next((a for a in ctx.areas if a.slug in text), None)
         rent = re.search(r"(\d{3,4})\s*(?:€|eur)", text)
-        el = lang == "el"
         return ListingAnalysis(
             is_listing=True,
             details=ListingDetails(
@@ -273,13 +282,20 @@ class FakeAnalyzer:
                 area_slug=area.slug if area else None,
             ),
             verdict="fair",
-            summary="Δοκιμαστική απάντηση." if el else "Test answer.",
-            pros=["Κοντά στο μετρό" if el else "Close to the metro"],
-            cons=["Χωρίς φωτογραφίες" if el else "No photos"],
-            red_flags=[],
-            questions_for_landlord=[
-                "Τι θέρμανση έχει;" if el else "What heating does it have?"
-            ],
+            en=ListingTexts(
+                summary="Test answer.",
+                pros=["Close to the metro"],
+                cons=["No photos"],
+                red_flags=[],
+                questions_for_landlord=["What heating does it have?"],
+            ),
+            el=ListingTexts(
+                summary="Δοκιμαστική απάντηση.",
+                pros=["Κοντά στο μετρό"],
+                cons=["Χωρίς φωτογραφίες"],
+                red_flags=[],
+                questions_for_landlord=["Τι θέρμανση έχει;"],
+            ),
             landlord_message_el="Καλησπέρα σας, ενδιαφέρομαι για το διαμέρισμα.",
         )
 

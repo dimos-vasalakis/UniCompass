@@ -201,6 +201,14 @@ export type SavedMatch = {
 
 export type ListingVerdict = "good" | "fair" | "overpriced" | "suspicious" | "not_a_listing";
 
+export type ListingTexts = {
+  summary: string;
+  pros: string[];
+  cons: string[];
+  red_flags: string[];
+  questions_for_landlord: string[];
+};
+
 export type ListingCheckResult = {
   is_listing: boolean;
   details: {
@@ -215,11 +223,9 @@ export type ListingCheckResult = {
     area_slug: string | null;
   };
   verdict: ListingVerdict;
-  summary: string;
-  pros: string[];
-  cons: string[];
-  red_flags: string[];
-  questions_for_landlord: string[];
+  /** The written answer in both languages, so it follows the language toggle. */
+  en: ListingTexts;
+  el: ListingTexts;
   landlord_message_el: string;
   /** Our own numbers for the area, never the model's. */
   area: {

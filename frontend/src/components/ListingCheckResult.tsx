@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { useDict } from "@/lib/i18n/client";
-import { areaNames, fmt, type Locale } from "@/lib/i18n/config";
+import { useDict, useLocale } from "@/lib/i18n/client";
+import { areaNames, fmt } from "@/lib/i18n/config";
 import type { ListingCheckResult as Result, ListingVerdict } from "@/types";
 
 // Theme tokens only: the dark theme is a data-theme attribute, not Tailwind's dark: variant.
@@ -65,10 +65,12 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-/** `lang` is the language the check was made in: names follow the answer's text. */
-export function ListingCheckResult({ result, lang }: { result: Result; lang: Locale }) {
+/** Follows the current UI language: the answer is stored in both. */
+export function ListingCheckResult({ result }: { result: Result }) {
   const d = useDict().assistant;
+  const lang = useLocale();
   const { details, area } = result;
+  const texts = result[lang];
   const verdict = VERDICT_STYLE[result.verdict];
   const euros = (n: number) => `${n.toLocaleString(lang === "el" ? "el-GR" : "en-GB")}€`;
 
@@ -102,7 +104,7 @@ export function ListingCheckResult({ result, lang }: { result: Result; lang: Loc
             </div>
           )}
         </div>
-        <p className="mt-3 leading-relaxed">{result.summary}</p>
+        <p className="mt-3 leading-relaxed">{texts.summary}</p>
       </header>
 
       {/* Our numbers */}
@@ -155,11 +157,11 @@ export function ListingCheckResult({ result, lang }: { result: Result; lang: Loc
         </section>
       )}
 
-      {result.red_flags.length > 0 && (
+      {texts.red_flags.length > 0 && (
         <section className="rounded-lg border border-danger/40 bg-danger/10 p-4">
           <h3 className="font-semibold text-danger">⚠ {d.redFlags}</h3>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
-            {result.red_flags.map((flag, i) => (
+            {texts.red_flags.map((flag, i) => (
               <li key={i}>{flag}</li>
             ))}
           </ul>
@@ -167,15 +169,15 @@ export function ListingCheckResult({ result, lang }: { result: Result; lang: Loc
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Points title={d.pros} items={result.pros} mark="✓" markClass="bg-brand-light text-brand" />
-        <Points title={d.cons} items={result.cons} mark="✕" markClass="bg-danger/10 text-danger" />
+        <Points title={d.pros} items={texts.pros} mark="✓" markClass="bg-brand-light text-brand" />
+        <Points title={d.cons} items={texts.cons} mark="✕" markClass="bg-danger/10 text-danger" />
       </div>
 
-      {result.questions_for_landlord.length > 0 && (
+      {texts.questions_for_landlord.length > 0 && (
         <section className="rounded-lg border border-border p-4">
           <h3 className="font-semibold">{d.questions}</h3>
           <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm marker:font-semibold marker:text-brand">
-            {result.questions_for_landlord.map((q, i) => (
+            {texts.questions_for_landlord.map((q, i) => (
               <li key={i}>{q}</li>
             ))}
           </ol>

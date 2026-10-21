@@ -10,7 +10,12 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.schemas.listing_check import ListingAnalysis, ListingDetails
+from app.schemas.listing_check import (
+    ListingAnalysis,
+    ListingCheckResult,
+    ListingDetails,
+    ListingTexts,
+)
 from app.services.listing_check import (
     AnalyzerError,
     AreaRow,
@@ -42,6 +47,11 @@ def _area(slug: str, rent: int) -> AreaRow:
     )
 
 
+TEXTS = ListingTexts(
+    summary="ok", pros=[], cons=[], red_flags=[], questions_for_landlord=[]
+)
+
+
 def _analysis(area_slug: str | None, rent: int | None) -> ListingAnalysis:
     return ListingAnalysis(
         is_listing=True,
@@ -57,11 +67,8 @@ def _analysis(area_slug: str | None, rent: int | None) -> ListingAnalysis:
             area_slug=area_slug,
         ),
         verdict="fair",
-        summary="ok",
-        pros=[],
-        cons=[],
-        red_flags=[],
-        questions_for_landlord=[],
+        en=TEXTS,
+        el=TEXTS,
         landlord_message_el="Καλησπέρα",
     )
 
@@ -422,3 +429,24 @@ def test_suspicious_verdict_is_kept() -> None:
     analysis = _analysis("kifisia", 7900)
     analysis.verdict = "suspicious"
     assert build_result(analysis, ctx, [], "en").verdict == "suspicious"
+
+
+def test_result_has_both_languages_and_reads_old_checks() -> None:
+    ctx = CheckContext([_area("zografou", 400)], None, None)
+    result = build_result(_analysis("zografou", 400), ctx, [], "en")
+    assert result.en.summary == result.el.summary == "ok"
+    # A check stored before both languages existed: one flat set of texts.
+    old = result.model_dump(mode="json")
+    del old["en"], old["el"]
+    old.update(
+        summary="Παλιό", pros=["α"], cons=[], red_flags=[], questions_for_landlord=[]
+    )
+    migrated = ListingCheckResult.model_validate(old)
+    assert migrated.el.summary == migrated.en.summary == "Παλιό"
+
+
+def test_refusal_fallback_only_for_models_that_have_one() -> None:
+    from app.services.listing_check import _fallback_args
+
+    assert _fallback_args("claude-haiku-5-5") == {}
+    assert _fallback_args("claude-sonnet-5-5")["fallbacks"] == "default"

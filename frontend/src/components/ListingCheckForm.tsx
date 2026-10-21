@@ -279,7 +279,7 @@ export function ListingCheckForm({
         </form>
       )}
 
-      {check && <ListingCheckResult result={check.result} lang={check.lang} />}
+      {check && <ListingCheckResult result={check.result} />}
     </div>
   );
 }
