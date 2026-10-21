@@ -28,10 +28,13 @@ export function ListingCheckForm({
   remaining: number;
 }) {
   const { checks_per_account: limit, max_images: maxImages } = limits;
-  const d = useDict().assistant;
+  const dict = useDict();
+  const d = dict.assistant;
   const locale = useLocale();
   const router = useRouter();
+  const [uniSlug, setUniSlug] = useState<string | null>(null);
   const [deptId, setDeptId] = useState("");
+  const uni = universities.find((u) => u.slug === uniSlug) ?? null;
   const [text, setText] = useState("");
   const [images, setImages] = useState<{ name: string; image: ListingImage }[]>([]);
   const [remaining, setRemaining] = useState(initialRemaining);
@@ -131,33 +134,65 @@ export function ListingCheckForm({
   return (
     <div className="space-y-6">
       <p className={`text-sm font-medium ${none ? "text-danger" : "text-muted"}`}>
-        {none ? fmt(d.noneLeft, { limit }) : fmt(d.remaining, { remaining, limit })}
+        {none ? fmt(d.noneLeft, { limit }) : remaining === 1 ? d.remainingOne : fmt(d.remaining, { remaining })}
       </p>
 
       {!none && (
         <form onSubmit={submit} className="space-y-5">
-          <label className="block space-y-2">
-            <span className="font-medium">{d.department}</span>
-            <select
-              value={deptId}
-              onChange={(e) => {
-                setDeptId(e.target.value);
-                submitKey.current = null;
-              }}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
-            >
-              <option value="">{d.noDepartment}</option>
+          {/* Same picker as /match: university first, then its departments. Optional. */}
+          <fieldset className="space-y-2">
+            <legend className="font-medium">{d.university}</legend>
+            <p className="text-sm text-muted">{d.universityHint}</p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {universities.map((u) => (
-                <optgroup key={u.slug} label={u.short_name}>
-                  {u.departments.map((dep) => (
-                    <option key={dep.id} value={dep.id}>
-                      {dep.name}
-                    </option>
-                  ))}
-                </optgroup>
+                <button
+                  key={u.slug}
+                  type="button"
+                  aria-pressed={u.slug === uniSlug}
+                  onClick={() => {
+                    // Tapping the chosen one again clears it ("not sure yet").
+                    setUniSlug(u.slug === uniSlug ? null : u.slug);
+                    setDeptId("");
+                    submitKey.current = null;
+                  }}
+                  className={`rounded-lg border p-2.5 text-left text-sm transition ${
+                    u.slug === uniSlug
+                      ? "border-brand bg-brand-light ring-2 ring-brand/30"
+                      : "border-border hover:border-brand"
+                  }`}
+                >
+                  <div className="font-semibold">{u.short_name}</div>
+                </button>
               ))}
-            </select>
-          </label>
+            </div>
+          </fieldset>
+
+          {uni && (
+            <label className="block space-y-2">
+              <span className="font-medium">{dict.match.department}</span>
+              <select
+                value={deptId}
+                onChange={(e) => {
+                  setDeptId(e.target.value);
+                  submitKey.current = null;
+                }}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+              >
+                <option value="">{dict.match.chooseDepartment}</option>
+                {uni.campuses.map((c) => (
+                  <optgroup key={c.slug} label={c.name}>
+                    {uni.departments
+                      .filter((dep) => dep.campus_slug === c.slug)
+                      .map((dep) => (
+                        <option key={dep.id} value={dep.id}>
+                          {dep.name}
+                        </option>
+                      ))}
+                  </optgroup>
+                ))}
+              </select>
+            </label>
+          )}
 
           <label className="block space-y-2">
             <span className="font-medium">{d.text}</span>

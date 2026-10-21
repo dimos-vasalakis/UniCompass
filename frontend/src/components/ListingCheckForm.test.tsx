@@ -91,14 +91,14 @@ describe("ListingCheckForm", () => {
 
   it("submits, shows the answer and counts the check", async () => {
     renderForm();
-    expect(screen.getByText("3 of 3 checks left")).toBeInTheDocument();
+    expect(screen.getByText("3 checks left")).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText("Listing text"), "Studio in Zografou 450€");
     await userEvent.click(screen.getByRole("button", { name: "Check this listing" }));
 
     expect(await screen.findByText("Overpriced")).toBeInTheDocument();
     expect(screen.getByText("+13% vs the area", { exact: false })).toBeInTheDocument();
     expect(screen.getByText("Asks for a deposit before a viewing")).toBeInTheDocument();
-    expect(screen.getByText("2 of 3 checks left")).toBeInTheDocument();
+    expect(screen.getByText("2 checks left")).toBeInTheDocument();
     const [path, init] = apiFetch.mock.calls[0];
     expect(path).toBe("/assistant/listing-checks?lang=en");
     expect(JSON.parse(init.body)).toEqual({ department_id: null, text: "Studio in Zografou 450€", images: [] });
@@ -157,4 +157,31 @@ describe("ListingCheckForm", () => {
     await userEvent.click(screen.getByRole("button", { name: "Check this listing" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("We couldn't use one of the screenshots");
   });
+
+  it("picks the university first, then one of its departments", async () => {
+    render(
+      <ListingCheckForm
+        universities={[
+          {
+            slug: "ntua",
+            name: "National Technical University of Athens",
+            short_name: "NTUA (ΕΜΠ)",
+            campuses: [{ slug: "ntua-zografou", name: "Zografou", lat: 0, lng: 0 }],
+            departments: [{ id: "d1", name: "Civil Engineering", campus_slug: "ntua-zografou" }],
+          },
+        ]}
+        limits={{ checks_per_account: 3, max_images: 3, max_text_chars: 6000 }}
+        remaining={1}
+      />,
+    );
+    expect(screen.getByText("1 check left")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Department")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "NTUA (ΕΜΠ)" }));
+    await userEvent.selectOptions(screen.getByLabelText("Department"), "d1");
+    await userEvent.type(screen.getByLabelText("Listing text"), "flat");
+    await userEvent.click(screen.getByRole("button", { name: "Check this listing" }));
+    await waitFor(() => expect(apiFetch).toHaveBeenCalled());
+    expect(JSON.parse(apiFetch.mock.calls[0][1].body).department_id).toBe("d1");
+  });
 });
+
