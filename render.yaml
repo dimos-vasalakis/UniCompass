@@ -41,3 +41,5 @@ services:
         sync: false
       - key: SENTRY_DSN
         sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false

@@ -157,7 +157,7 @@ async def list_canteens(db: AsyncSession) -> list[dict]:
     return out
 
 
-def _canteens_near(
+def canteens_near(
     canteens: list[dict], lat: float, lng: float, university_slug: str | None = None
 ) -> list[CanteenOut]:
     """Nearest first. With a university, only its canteens (none if it has none), else all."""
@@ -299,7 +299,7 @@ async def get_neighborhood(
         nearby_loaded=loaded,
         supermarkets=[_place_out(p) for p in nearby if p.kind == "supermarket"],
         gyms=[_place_out(p) for p in nearby if p.kind == "gym"],
-        canteens=_canteens_near(await list_canteens(db), base.lat, base.lng)[:3],
+        canteens=canteens_near(await list_canteens(db), base.lat, base.lng)[:3],
     )
 
 
@@ -317,7 +317,7 @@ async def attach_daily_life(
     canteens = await list_canteens(db)
     for area in areas:
         mine = nearby[area.slug]
-        canteen = _canteens_near(canteens, area.lat, area.lng, university_slug)
+        canteen = canteens_near(canteens, area.lat, area.lng, university_slug)
         gyms = [_place_out(p) for p in mine if p.kind == "gym"]
         area.daily_life = DailyLife(
             nearby_loaded=loaded,

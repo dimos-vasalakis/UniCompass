@@ -1,6 +1,6 @@
 # UniCompass
 
-Helps students who passed the Panhellenic exams settle into their new university city. A student picks their department and priorities (rent, commute, nightlife, safety…) and gets the three Athens neighborhoods that fit them best, with guides for each area, plus nearby supermarkets, gyms, the nearest metro station and the student restaurant (φοιτητική λέσχη) of their own university. Each guide also explains how to get to the campus: on foot, by metro (with line changes) and by bus. The site is available in English and Greek.
+Helps students who passed the Panhellenic exams settle into their new university city. A student picks their department and priorities (rent, commute, nightlife, safety…) and gets the three Athens neighborhoods that fit them best, with guides for each area, plus nearby supermarkets, gyms, the nearest metro station and the student restaurant (φοιτητική λέσχη) of their own university. Each guide also explains how to get to the campus: on foot, by metro (with line changes) and by bus. Found a flat? The listing check reads screenshots or the pasted text of a rental listing (spitogatos, xe…) with Claude, compares it with what students pay in that area and with the student's commute, flags scam warning signs and writes the message for the landlord in Greek. It needs an account, and every account gets 3 checks. The site is available in English and Greek.
 
 | Layer     | Tech                         | Hosting  |
 | --------- | ---------------------------- | -------- |
@@ -10,6 +10,7 @@ Helps students who passed the Panhellenic exams settle into their new university
 | DB + Auth | Supabase (Postgres)          | Supabase |
 | Payments  | Stripe (one-time Checkout)   |          |
 | Email     | Resend                       |          |
+| AI        | Claude API (listing check)   |          |
 | Cache     | Upstash Redis                |          |
 | Errors    | Sentry (optional)            |          |
 
@@ -74,6 +75,10 @@ Everything defaults to empty, so the web apps boot without secrets. Public pages
 | `UPSTASH_REDIS_REST_URL` / `_TOKEN`      | Upstash (optional)                                                           |
 | `SENTRY_DSN`                             | Sentry (optional)                                                            |
 | `GOOGLE_MAPS_API_KEY`                    | Only for `scripts/compute_travel_times.py`                                   |
+| `ANTHROPIC_API_KEY`                      | Claude API key for the listing check. Empty: `/assistant` answers 503 "Assistant unavailable" (the rest of the site works) |
+| `ANTHROPIC_MODEL`                        | Optional, default `claude-sonnet-5-5`. `claude-haiku-5-5` is much cheaper but reads screenshots less well |
+| `LISTING_CHECK_LIMIT`                    | Optional, default `3`: checks per account, ever                               |
+| `LISTING_CHECK_FAKE`                     | Optional, `true` for canned answers in local dev without a key (ignored when `ENVIRONMENT=production`) |
 
 Database URL gotchas:
 - Paste the URIs exactly as Supabase shows them (`postgresql://…`). The app switches them to the psycopg driver itself. **Don't add `+asyncpg`**: it isn't installed, and every DB endpoint will return 500.
@@ -117,6 +122,8 @@ Database URL gotchas:
 - Health check `/api/v1/health`.
 
 Fill in the environment variables above. Run `alembic upgrade head`, `python -m scripts.seed` and `python -m scripts.compute_nearby` against the production database from your machine. Do this on every deploy that adds a migration: the seed fills the Greek (`*_el`) columns, and a database that is migrated but not re-seeded silently shows English. The free plan sleeps after about 15 minutes idle, so the first request after that takes around 50 seconds.
+
+**Listing check.** Set `ANTHROPIC_API_KEY` on Render. Each check is one Claude call, paid by your key; the 3-per-account limit is kept in `profiles.listing_checks_used` (migrations `0009`–`0010`) and only the backend can change it. A check that fails on Claude's side is given back. Screenshots are sent to Claude and never stored.
 
 **Frontend (Vercel).** Import the repo with root directory `frontend` and set the environment variables.
 
@@ -217,13 +224,14 @@ Autogenerate only covers tables and columns. Write RLS policies, grants and trig
 
 1. **Sign-in.** Users sign in on the frontend through Supabase Auth: Google, GitHub or an email magic link. `/auth/callback` swaps the code for a session cookie, and `src/proxy.ts` refreshes it and protects `/dashboard`.
 2. **API calls.** The frontend sends the Supabase access token to the backend as `Authorization: Bearer …`. The backend verifies it with Supabase's JWKS (or the legacy HS256 secret).
-3. **Database access.** The backend talks to Postgres directly with async SQLAlchemy through the pooler. That connection bypasses RLS, so every query filters by the user's id itself. Users can edit only `full_name`/`role` of their own profile through Supabase directly; billing fields like `is_premium` are written only by the backend's Stripe webhook.
+3. **Database access.** The backend talks to Postgres directly with async SQLAlchemy through the pooler. That connection bypasses RLS, so every query filters by the user's id itself. Users can edit only `full_name`/`role`/`username` of their own profile through Supabase directly; billing fields like `is_premium` are written only by the backend's Stripe webhook, and the listing-check counter only by the backend.
 4. **Caching.** Reference data (areas, universities, hubs, canteens, campus routes) is cached in Upstash for 6 hours, keyed by language, and profiles for 5 minutes. Nearby supermarkets and gyms are never cached. Reseeding clears the cache.
-5. **Map.** `src/components/MatchMap.tsx` builds the Leaflet map imperatively in one effect (react-leaflet's `MapContainer` crashed when React re-ran effects). It is used on the match results and on every area page. Pins: numbered areas, campus, hub, supermarkets, gyms, canteens and the nearest metro station (Μ); tapping a station draws its lines. Supermarkets and gyms show no walking times, because the student's home isn't known. On match results the view fits only the areas, campus and hub; an area page fits every pin. "Full guide" links carry `?campus=<slug>`, which adds the route section (`RouteGuide.tsx`) to the area page.
+5. **Listing check.** `/assistant` is a public page: visitors without an account see a sign-up button (`/signup?next=/assistant`), signed-in users get the form. The browser shrinks screenshots to JPEG, then `POST /api/v1/assistant/listing-checks` spends one check, makes one Claude call (`services/listing_check.py`, structured output) and stores the answer. The figures shown (area rent, % vs the area, commute, canteen, metro) come from our own data, not from the model. Past checks open at `/dashboard/checks/<id>`.
+6. **Map.** `src/components/MatchMap.tsx` builds the Leaflet map imperatively in one effect (react-leaflet's `MapContainer` crashed when React re-ran effects). It is used on the match results and on every area page. Pins: numbered areas, campus, hub, supermarkets, gyms, canteens and the nearest metro station (Μ); tapping a station draws its lines. Supermarkets and gyms show no walking times, because the student's home isn't known. On match results the view fits only the areas, campus and hub; an area page fits every pin. "Full guide" links carry `?campus=<slug>`, which adds the route section (`RouteGuide.tsx`) to the area page.
 
 ```
 frontend/                 Next.js app
-  src/app/                routes: /, /match, /neighborhoods, /login, /signup, /auth/callback, /dashboard, /pricing
+  src/app/                routes: /, /match, /neighborhoods, /assistant, /login, /signup, /auth/callback, /dashboard, /pricing
   src/components/         shared UI (AuthForm, MatchMap, MetroCard, RouteGuide, score bars, language toggle, …)
   src/lib/i18n/           English/Greek dictionaries and locale helpers
   src/lib/supabase/       browser, server and proxy Supabase clients
@@ -232,9 +240,9 @@ frontend/                 Next.js app
   e2e/                    Playwright tests
 mobile/                    Expo app (src/app routes, src/lib Supabase + API client)
 backend/                  FastAPI app
-  app/api/v1/endpoints/   health, users, billing (+ Stripe webhook), places, match
+  app/api/v1/endpoints/   health, users, billing (+ Stripe webhook), places, match, assistant
   app/core/               settings, DB engine, JWT verification
-  app/services/           matching, metro, routing (pure), places, billing, cache, email
+  app/services/           matching, metro, routing (pure), places, billing, cache, email, listing_check (Claude)
   app/models/, schemas/   SQLAlchemy models, Pydantic API models
   alembic/                migrations
   data/athens.json        area/university/hub/canteen data (athens.el.json: Greek text)

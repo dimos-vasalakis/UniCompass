@@ -71,7 +71,12 @@ def test_users_can_edit_name_and_role(test_user) -> None:
 
 @pytest.mark.parametrize(
     "assignment",
-    ["is_premium = true", "stripe_customer_id = 'cus_fake'", "email = 'x@evil.gr'"],
+    [
+        "is_premium = true",
+        "stripe_customer_id = 'cus_fake'",
+        "email = 'x@evil.gr'",
+        "listing_checks_used = 0",
+    ],
 )
 def test_users_cannot_edit_billing_or_email(test_user, assignment) -> None:
     with as_role("authenticated", test_user) as cur:
@@ -160,6 +165,29 @@ def test_saved_matches_are_private(make_user) -> None:
                 "insert into public.saved_matches (user_id, department_id, preferences, result) "
                 "values (%s, %s, '{}', '[]')",
                 (bob, dept),
+            )
+
+
+def test_listing_checks_are_private(make_user) -> None:
+    alice, bob = make_user(), make_user()
+    with psycopg.connect(TEST_DATABASE_URL) as conn:
+        conn.execute(
+            "insert into public.listing_checks (user_id, lang, result) "
+            "values (%s, 'en', '{}')",
+            (alice,),
+        )
+    with as_role("authenticated", alice) as cur:
+        cur.execute("select count(*) from public.listing_checks")
+        assert cur.fetchone() == (1,)
+    with as_role("authenticated", bob) as cur:
+        cur.execute("select count(*) from public.listing_checks")
+        assert cur.fetchone() == (0,)
+        # Checks are created by the API only (it spends the quota).
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            cur.execute(
+                "insert into public.listing_checks (user_id, lang, result) "
+                "values (%s, 'en', '{}')",
+                (bob,),
             )
 
 

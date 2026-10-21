@@ -198,3 +198,60 @@ export type SavedMatch = {
   preferences: MatchRequest;
   results: MatchArea[];
 };
+
+export type ListingVerdict = "good" | "fair" | "overpriced" | "suspicious" | "not_a_listing";
+
+export type ListingCheckResult = {
+  is_listing: boolean;
+  details: {
+    rent_eur: number | null;
+    size_m2: number | null;
+    floor: string | null;
+    heating: string | null;
+    furnished: boolean | null;
+    bills_included: boolean | null;
+    deposit_months: number | null;
+    address_text: string | null;
+    area_slug: string | null;
+  };
+  verdict: ListingVerdict;
+  summary: string;
+  pros: string[];
+  cons: string[];
+  red_flags: string[];
+  questions_for_landlord: string[];
+  landlord_message_el: string;
+  /** Our own numbers for the area, never the model's. */
+  area: {
+    slug: string;
+    name: string;
+    name_el: string;
+    typical_studio_rent: number;
+    price_vs_area_pct: number | null;
+    commute_minutes: number | null;
+    commute_estimated: boolean | null;
+    canteen: Canteen | null;
+    metro: Metro | null;
+  } | null;
+};
+
+export type ListingCheck = {
+  id: string;
+  created_at: string;
+  lang: "en" | "el";
+  department_id: string | null;
+  input_text: string | null;
+  image_count: number;
+  result: ListingCheckResult;
+};
+
+export type ListingCheckCreated = ListingCheck & { remaining: number };
+
+export type ListingCheckLimits = { checks_per_account: number; max_images: number; max_text_chars: number };
+
+export type ListingChecks = {
+  limit: number;
+  used: number;
+  remaining: number;
+  checks: ListingCheck[];
+};

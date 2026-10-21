@@ -30,6 +30,14 @@ class Settings(BaseSettings):
 
     sentry_dsn: str = ""
 
+    # Listing Check assistant. Every account gets listing_check_limit checks, ever.
+    anthropic_api_key: str = ""
+    anthropic_model: str = "claude-sonnet-5-5"
+    listing_check_limit: int = 3
+    # Dev/CI only: answer listing checks with a canned result instead of calling
+    # Claude (ignored when ENVIRONMENT=production).
+    listing_check_fake: bool = False
+
     # Only used by scripts/compute_travel_times.py, never at request time.
     google_maps_api_key: str = ""
 

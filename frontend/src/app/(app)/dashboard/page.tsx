@@ -10,7 +10,9 @@ import { getAccessToken, getUser } from "@/lib/supabase/server";
 import type { Profile, SavedMatch } from "@/types";
 
 async function Dashboard() {
-  const d = (await getDictionary()).dashboard;
+  const dict = await getDictionary();
+  const d = dict.dashboard;
+  const a = dict.assistant;
   const locale = await getLocale();
   const user = await getUser();
   if (!user) redirect("/login?next=/dashboard");
@@ -36,6 +38,12 @@ async function Dashboard() {
   return (
     <>
       <h1 className="text-2xl font-semibold">{fmt(d.welcome, { name })}</h1>
+      <Link
+        href="/assistant"
+        className="mt-4 inline-block rounded-lg border border-brand px-4 py-2 font-medium text-brand hover:bg-brand-light"
+      >
+        {a.dashboardCta}
+      </Link>
       <section className="mt-8">
         <h2 className="text-xl font-semibold">{d.saved}</h2>
         {savedError ? (

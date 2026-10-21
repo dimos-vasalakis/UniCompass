@@ -47,6 +47,9 @@ export async function SiteHeader() {
         <Link href="/neighborhoods" className="hidden hover:text-brand sm:inline">
           {d.common.allAreas}
         </Link>
+        <Link href="/assistant" className="hidden hover:text-brand md:inline">
+          {d.assistant.nav}
+        </Link>
         {/* inline-block so the width applies: reserves room for the auth links. */}
         <Suspense fallback={<span aria-hidden className="inline-block h-8 w-44" />}>
           <AccountLinks />

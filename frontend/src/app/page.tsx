@@ -3,7 +3,8 @@ import Link from "next/link";
 import { getDictionary } from "@/lib/i18n/server";
 
 export default async function Home() {
-  const d = (await getDictionary()).home;
+  const dict = await getDictionary();
+  const d = dict.home;
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-14 px-4 py-12 sm:px-6">
       <section className="grid items-center gap-10 md:grid-cols-[1fr_300px]">
@@ -25,6 +26,9 @@ export default async function Home() {
               {d.browse}
             </Link>
           </div>
+          <Link href="/assistant" className="inline-block text-sm font-medium text-brand hover:underline">
+            {dict.assistant.dashboardCta}
+          </Link>
         </div>
         <Image src="/logo.png" alt="UniCompass" width={300} height={229} priority className="mx-auto hidden md:block" />
       </section>

@@ -1,4 +1,5 @@
 from app.models.base import Base
+from app.models.listing_check import ListingCheck
 from app.models.location import (
     Campus,
     City,
@@ -18,6 +19,7 @@ __all__ = [
     "Campus",
     "City",
     "Department",
+    "ListingCheck",
     "NearbyPlace",
     "Neighborhood",
     "Profile",
