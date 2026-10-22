@@ -14,7 +14,8 @@ services:
       - ./backend/tests/supabase_stub.sql:/docker-entrypoint-initdb.d/00_stub.sql:ro
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
+      # Over TCP: during init the image runs a socket-only temporary server.
+      test: ["CMD", "pg_isready", "-h", "localhost", "-U", "postgres"]
       interval: 2s
       timeout: 5s
       retries: 20
@@ -26,7 +27,6 @@ services:
     command: sh -c "alembic upgrade head && python -m scripts.seed"
     environment:
       DIRECT_URL: postgresql://postgres:test@db:5432/postgres
-      DATABASE_URL: postgresql://postgres:test@db:5432/postgres
     depends_on:
       db:
         condition: service_healthy
@@ -40,7 +40,6 @@ services:
       FRONTEND_URL: http://localhost:3000
       CORS_ORIGINS: '["http://localhost:3000"]'
       DATABASE_URL: postgresql://postgres:test@db:5432/postgres
-      DIRECT_URL: postgresql://postgres:test@db:5432/postgres
       LISTING_CHECK_FAKE: "true"
     depends_on:
       migrate:

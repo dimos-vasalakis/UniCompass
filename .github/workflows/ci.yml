@@ -30,7 +30,7 @@ jobs:
           POSTGRES_PASSWORD: test
         ports: ["5432:5432"]
         options: >-
-          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+          --health-cmd "pg_isready -h localhost" --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       # Throwaway Postgres from the service container above.
       DIRECT_URL: postgresql://postgres:test@localhost:5432/postgres
@@ -62,6 +62,20 @@ jobs:
 
       - name: Tests
         run: pytest -q
+
+  docker:
+    name: Docker images (build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Render deploys backend/Dockerfile, so a broken image should fail here, not on deploy.
+      - run: docker build -t unicompass-api backend
+      - name: Smoke-test the API image as Render runs it
+        run: |
+          docker run -d --name api -e PORT=10000 -e ENVIRONMENT=production -p 10000:10000 unicompass-api
+          for i in $(seq 1 30); do curl -sf localhost:10000/api/v1/health && exit 0; sleep 1; done
+          docker logs api; exit 1
+      - run: docker build -t unicompass-web frontend
 
   mobile:
     name: Mobile (lint, types)
@@ -117,7 +131,7 @@ jobs:
           POSTGRES_PASSWORD: test
         ports: ["5432:5432"]
         options: >-
-          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+          --health-cmd "pg_isready -h localhost" --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       # Throwaway Postgres from the service container above.
       DIRECT_URL: postgresql://postgres:test@localhost:5432/postgres
@@ -129,7 +143,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: backend/requirements.txt
+          cache-dependency-path: backend/requirements*.txt
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
