@@ -18,7 +18,7 @@ npm run test:e2e # Playwright (e2e/); starts uvicorn + next itself, needs the se
 
 Backend (run from `backend/`, Python 3.12, venv in `backend/.venv`):
 ```bash
-pip install -r requirements.txt          # includes pytest + ruff
+pip install -r requirements-dev.txt      # runtime deps (requirements.txt) + pytest + ruff
 fastapi dev app/main.py                  # http://localhost:8000/docs (docs disabled when ENVIRONMENT=production)
 pytest                                   # all tests
 pytest tests/test_health.py::test_health # single test
@@ -27,6 +27,7 @@ ruff check . && ruff format .
 
 Other:
 ```bash
+docker compose up --build                                         # local stack (Postgres+stub, migrate+seed, API :8000, web :3000; no auth)
 alembic upgrade head                                              # from backend/, uses DIRECT_URL
 python -m scripts.seed                                            # load data/athens.json (idempotent)
 TEST_DATABASE_URL=postgresql://postgres:test@localhost:55432/postgres pytest  # incl. DB tests (see docs/development.md)

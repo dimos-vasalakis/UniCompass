@@ -1,0 +1,4 @@
+# Tests and linting (CI, local dev). The Docker image installs requirements.txt only.
+-r requirements.txt
+pytest>=8.3
+ruff>=0.8

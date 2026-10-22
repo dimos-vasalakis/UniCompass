@@ -81,13 +81,21 @@ The city data is structured so a new city (Thessaloniki, Patras, Heraklion…) i
 
 ## Quick start
 
-You need Node 20+, Python 3.12, and a Supabase project (or the Docker test database described in [docs/development.md](docs/development.md#tests)).
+**With Docker** (nothing else to install):
+
+```bash
+docker compose up --build    # web http://localhost:3000, API http://localhost:8000/docs
+```
+
+This starts Postgres, applies the migrations, loads the Athens data and runs the API and web app. Sign-in is off in this mode (no Supabase Auth); matching, area guides and every public page work.
+
+**Without Docker,** you need Node 20+, Python 3.12, and a Supabase project (or the Docker test database described in [docs/development.md](docs/development.md#tests)).
 
 ```bash
 # API: http://localhost:8000/docs
 cd backend
 python3.12 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 cp .env.example .env
 alembic upgrade head            # create tables, RLS, grants
 python -m scripts.seed          # load the Athens data
@@ -119,6 +127,7 @@ Every setting defaults to empty, so the apps boot without secrets: public pages 
 frontend/   Next.js web app
 mobile/     Expo app for iOS and Android
 backend/    FastAPI API, Alembic migrations, city data and data scripts
+docker-compose.yml  local stack: Postgres + API + web
 docs/       setup and development guides
 render.yaml Render blueprint
 ```

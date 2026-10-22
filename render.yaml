@@ -1,14 +1,16 @@
 services:
   - type: web
     name: unicompass-api
-    runtime: python
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    # Only backend changes trigger a deploy.
+    buildFilter:
+      paths:
+        - backend/**
+        - render.yaml
     healthCheckPath: /api/v1/health
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.12.7
       - key: ENVIRONMENT
         value: production
       - key: FRONTEND_URL

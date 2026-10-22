@@ -75,10 +75,12 @@ Database URL gotchas:
 
 ## Deployment
 
-**Backend (Render).** Create the service from `render.yaml` (New → Blueprint), or by hand:
-- Root directory `backend`, build command `pip install -r requirements.txt`.
-- Start command `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+**Backend (Render).** The API ships as the Docker image from `backend/Dockerfile`, the same image `docker compose` runs locally. It installs only `requirements.txt` (`requirements-dev.txt` adds pytest and ruff) and listens on Render's `$PORT`. Create the service from `render.yaml` (New → Blueprint), or by hand:
+- Runtime **Docker**, Dockerfile path `./backend/Dockerfile`, build context `./backend`. There's no build or start command: they live in the Dockerfile.
 - Health check `/api/v1/health`.
+- Build filter `backend/**`, so frontend-only commits don't redeploy the API.
+
+To build and run the production image locally: `docker build -t unicompass-api backend && docker run --env-file backend/.env -p 8000:8000 unicompass-api`.
 
 Fill in the environment variables above. Run `alembic upgrade head`, `python -m scripts.seed` and `python -m scripts.compute_nearby` against the production database from your machine. Do this on every deploy that adds a migration: the seed fills the Greek (`*_el`) columns, and a database that is migrated but not re-seeded silently shows English. The free plan sleeps after about 15 minutes idle, so the first request after that takes around 50 seconds.
 

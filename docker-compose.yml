@@ -1,0 +1,69 @@
+# Local stack: Postgres (with the Supabase stub) + API + web.
+#   docker compose up --build        → http://localhost:3000, API docs on :8000/docs
+#   docker compose down -v           → also wipe the database
+# There is no Supabase Auth here, so sign-in is off; matching, area guides and
+# public pages work. The mobile app runs on the host (npx expo start).
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: test
+    ports: ["55432:5432"]
+    volumes:
+      - ./backend/tests/supabase_stub.sql:/docker-entrypoint-initdb.d/00_stub.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+  # One-off: apply migrations and load the Athens data, then exit.
+  migrate:
+    image: unicompass-api
+    build: ./backend
+    command: sh -c "alembic upgrade head && python -m scripts.seed"
+    environment:
+      DIRECT_URL: postgresql://postgres:test@db:5432/postgres
+      DATABASE_URL: postgresql://postgres:test@db:5432/postgres
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    image: unicompass-api  # built by `migrate`
+    pull_policy: never
+    ports: ["8000:8000"]
+    environment:
+      ENVIRONMENT: development
+      FRONTEND_URL: http://localhost:3000
+      CORS_ORIGINS: '["http://localhost:3000"]'
+      DATABASE_URL: postgresql://postgres:test@db:5432/postgres
+      DIRECT_URL: postgresql://postgres:test@db:5432/postgres
+      LISTING_CHECK_FAKE: "true"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        # The browser reaches the API through the host port.
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports: ["3000:3000"]
+    environment:
+      # Server Components call the API over the compose network instead.
+      INTERNAL_API_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:

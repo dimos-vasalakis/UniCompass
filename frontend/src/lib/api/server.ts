@@ -1,6 +1,9 @@
 import { cacheLife } from "next/cache";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// INTERNAL_API_URL: server-only override for when the server reaches the API at
+// another address than the browser does (`http://api:8000` in docker-compose).
+const API_URL =
+  process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 /**
  * Cached GET for public reference data, for Server Components.

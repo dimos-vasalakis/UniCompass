@@ -33,6 +33,22 @@ backend/                  FastAPI app
 render.yaml               Render blueprint
 ```
 
+## Docker
+
+`docker-compose.yml` runs the stack locally: `db` (Postgres 16 with `backend/tests/supabase_stub.sql`, host port `55432`), `migrate` (one-off `alembic upgrade head` + seed), `api` (`:8000`, `LISTING_CHECK_FAKE=true`) and `web` (`:3000`).
+
+```bash
+docker compose up --build        # everything
+docker compose down -v           # stop and wipe the database
+```
+
+- There's no Supabase Auth in this setup, so sign-in is off. Use the non-Docker setup with a real Supabase project to work on auth.
+- The browser calls the API on `localhost:8000`, while the web container's server components use `INTERNAL_API_URL=http://api:8000` (`lib/api/server.ts`).
+- `NEXT_PUBLIC_*` values are build args of `frontend/Dockerfile`: change them in `docker-compose.yml` and rebuild.
+- `frontend/Dockerfile` builds Next's standalone server (`NEXT_OUTPUT=standalone`). Vercel ignores the Dockerfile and builds as before.
+- Compose takes host ports 3000, 8000 and 55432, the same ones the host dev servers, Playwright and the test database use: stop it before running those.
+- The mobile app isn't containerized: run `npx expo start` on the host so Expo Go can reach Metro over your network.
+
 ## Tests
 
 CI (`.github/workflows/ci.yml`) runs everything on each push to `main` and on each PR: backend lint, migrations, seed and pytest; mobile lint and typecheck; frontend lint, typecheck, Vitest and build; then Playwright end-to-end tests on desktop and phone.
@@ -45,7 +61,7 @@ ruff check . && ruff format .
 pytest                      # unit tests; DB tests skip without a test database
 ```
 
-DB tests (API, RLS/grants, seed, Stripe webhook) need a migrated, seeded Postgres. A throwaway one in Docker (or any local Postgres 16 on port 55432: run `tests/supabase_stub.sql` against it first):
+DB tests (API, RLS/grants, seed, Stripe webhook) need a migrated, seeded Postgres. A throwaway one in Docker (or any local Postgres 16 on port 55432: run `tests/supabase_stub.sql` against it first). Stop `docker compose` first: its `db` uses the same port, and it keeps its data, so it isn't a clean test database.
 
 ```bash
 docker run -d --name unicompass-pg-test -e POSTGRES_PASSWORD=test -p 55432:5432 \
