@@ -29,7 +29,7 @@ Other:
 ```bash
 alembic upgrade head                                              # from backend/, uses DIRECT_URL
 python -m scripts.seed                                            # load data/athens.json (idempotent)
-TEST_DATABASE_URL=postgresql://postgres:test@localhost:55432/postgres pytest  # incl. DB tests (see README)
+TEST_DATABASE_URL=postgresql://postgres:test@localhost:55432/postgres pytest  # incl. DB tests (see docs/development.md)
 alembic revision --autogenerate -m "msg"                          # after editing app/models
 stripe listen --forward-to localhost:8000/api/v1/billing/webhook  # local Stripe webhooks
 ```
